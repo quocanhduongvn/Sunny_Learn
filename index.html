@@ -200,6 +200,14 @@
 </head>
 
 <body>
+    <div id="overlay"
+        style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(52, 152, 219, 0.9); z-index:1000; display:flex; align-items:center; justify-content:center; flex-direction:column; color:white;">
+        <h1 style="margin-bottom:20px;">Bé Học Số</h1>
+        <button onclick="startApp()"
+            style="padding: 20px 40px; font-size: 1.5rem; border-radius: 50px; border:none; background:#2ecc71; color:white; font-weight:bold; cursor:pointer; box-shadow: 0 10px #27ae60;">
+            NHẤN ĐỂ BẮT ĐẦU ▶️
+        </button>
+    </div>
 
     <div class="controls">
         <button onclick="generateRandomLesson()" class="control-btn">🎲 Random Số</button>
@@ -266,6 +274,12 @@
             playAudio(words, langCode);
         }
 
+        // Hàm này sẽ được gọi khi người dùng nhấn nút "BẮT ĐẦU"
+        function startApp() {
+            document.getElementById('overlay').style.display = 'none';
+            generateRandomLesson();
+        }
+
         function changeLanguage() {
             currentLanguage = document.getElementById('lang-select').value;
             // Update button texts without resetting the current progress
@@ -327,7 +341,7 @@
         };
     </script>
 
-    <div class="version-label" id="debug-version">v26.001 (Google TTS)</div>
+    <div class="version-label" id="debug-version">V26.002 (Google TTS)</div>
 </body>
 
 </html>
