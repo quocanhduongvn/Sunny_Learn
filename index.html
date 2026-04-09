@@ -184,6 +184,18 @@
             box-shadow: 0 0 #27ae60;
             transform: translateY(4px);
         }
+
+        .version-label {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 5px;
+            border-radius: 4px;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -314,6 +326,8 @@
             generateRandomLesson();
         };
     </script>
+
+    <div class="version-label" id="debug-version">v26.001 (Google TTS)</div>
 </body>
 
 </html>
