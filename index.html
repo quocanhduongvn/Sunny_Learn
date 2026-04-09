@@ -238,36 +238,23 @@
         let targetNumbers = [];
         let currentIndex = 0;
 
+        function playAudio(text, lang) {
+            const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${lang}&q=${encodeURIComponent(text)}`;
+            const audio = new Audio(url);
+            audio.play().catch(e => console.error("Lỗi phát âm thanh: ", e));
+        }
+
         function speakNum(num) {
-            window.speechSynthesis.cancel(); // Xóa hàng đợi cũ (tránh lỗi kẹt âm thanh trên di động)
-
             const word = numWords[currentLanguage][num];
-            const utterance = new SpeechSynthesisUtterance(word);
-            utterance.lang = currentLanguage === 'vi' ? 'vi-VN' : 'en-US';
-            utterance.rate = 0.8;
-            utterance.volume = 1;
-
-            // Giữ lại đối tượng utterance trong bộ nhớ toàn cục (fix lỗi iOS tự động xóa biến)
-            window.utterances = window.utterances || [];
-            window.utterances.push(utterance);
-
-            window.speechSynthesis.speak(utterance);
+            const langCode = currentLanguage === 'vi' ? 'vi' : 'en-US';
+            playAudio(word, langCode);
         }
 
         function speakAllNumbers() {
-            window.speechSynthesis.cancel(); // Xóa hàng đợi cũ
-
-            // Joined by commas so the Voice Synthesizer naturally pauses between numbers
+            // Google TTS đọc dấu phẩy như khoảng nghỉ
             const words = targetNumbers.map(num => numWords[currentLanguage][num]).join(', ');
-            const utterance = new SpeechSynthesisUtterance(words);
-            utterance.lang = currentLanguage === 'vi' ? 'vi-VN' : 'en-US';
-            utterance.rate = 0.7; // Slightly slower
-            utterance.volume = 1;
-
-            window.utterances = window.utterances || [];
-            window.utterances.push(utterance);
-
-            window.speechSynthesis.speak(utterance);
+            const langCode = currentLanguage === 'vi' ? 'vi' : 'en-US';
+            playAudio(words, langCode);
         }
 
         function changeLanguage() {
