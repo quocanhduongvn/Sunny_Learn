@@ -255,8 +255,31 @@
             let targetNumbers = [];
             let currentIndex = 0;
             let ttsAudio;
+            const soundMap = {
+                0: 'sound/Zero.mp3',
+                1: 'sound/One.mp3',
+                2: 'sound/Two.mp3',
+                3: 'sound/Three.mp3',
+                4: 'sound/Four.mp3',
+                5: 'sound/Five.mp3',
+                6: 'sound/Six.mp3',
+                7: 'sound/Seven.mp3',
+                8: 'sound/Eight.mp3',
+                9: 'sound/Nine.mp3'
+            };
+            const speechSupported = 'speechSynthesis' in window;
 
-            function speak(text) {
+            function speakText(text) {
+                if (speechSupported) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = currentLanguage === 'vi' ? 'vi-VN' : 'en-US';
+                    utterance.volume = 1;
+                    utterance.rate = 1;
+                    utterance.pitch = 1;
+                    window.speechSynthesis.speak(utterance);
+                    return;
+                }
+
                 if (!ttsAudio) ttsAudio = document.getElementById('ttsAudio');
                 const lang = currentLanguage === 'vi' ? 'vi-VN' : 'en-US';
                 const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${lang}&q=${encodeURIComponent(text)}`;
@@ -264,14 +287,52 @@
                 ttsAudio.play().catch(e => console.error("Audio error:", e));
             }
 
+            function playAudioForNumber(num) {
+                const audioSrc = soundMap[num];
+                if (audioSrc && ttsAudio) {
+                    ttsAudio.src = audioSrc;
+                    ttsAudio.play().catch(err => {
+                        console.error('Audio file play error:', err);
+                        speakText(numWords[currentLanguage][num]);
+                    });
+                    return;
+                }
+                speakText(numWords[currentLanguage][num]);
+            }
+
             function speakNum(num) {
-                const word = numWords[currentLanguage][num];
-                speak(word);
+                playAudioForNumber(num);
             }
 
             function speakAllNumbers() {
-                const words = targetNumbers.map(num => numWords[currentLanguage][num]).join(', ');
-                speak(words);
+                if (!ttsAudio) {
+                    speakText(targetNumbers.map(num => numWords[currentLanguage][num]).join(' '));
+                    return;
+                }
+
+                const sequence = targetNumbers.filter(num => soundMap[num]);
+                if (sequence.length === 0) {
+                    speakText(targetNumbers.map(num => numWords[currentLanguage][num]).join(' '));
+                    return;
+                }
+
+                let index = 0;
+                ttsAudio.onended = () => {
+                    index += 1;
+                    if (index < sequence.length) {
+                        ttsAudio.src = soundMap[sequence[index]];
+                        ttsAudio.play().catch(err => {
+                            console.error('Audio sequence error:', err);
+                            speakText(targetNumbers.map(num => numWords[currentLanguage][num]).join(' '));
+                        });
+                    }
+                };
+
+                ttsAudio.src = soundMap[sequence[index]];
+                ttsAudio.play().catch(err => {
+                    console.error('Audio sequence start error:', err);
+                    speakText(targetNumbers.map(num => numWords[currentLanguage][num]).join(' '));
+                });
             }
 
             // Hàm khởi tạo sau khi bé nhấn nút Bắt đầu
@@ -279,20 +340,16 @@
                 document.getElementById('overlay').style.display = 'none'; // Ẩn màn hình chờ
 
                 ttsAudio = document.getElementById('ttsAudio');
-                // Phát âm thanh câm (silent) để "mở khóa" audio trên trình duyệt di động
-                ttsAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+                if (ttsAudio) {
+                    ttsAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+                    ttsAudio.play().catch(e => {
+                        console.warn("Silent unlock failed:", e);
+                    });
+                }
 
-                ttsAudio.play().then(() => {
-                    setTimeout(() => {
-                        speak(currentLanguage === 'vi' ? 'Chào bé' : 'Hello');
-                    }, 300);
-                }).catch(e => {
-                    console.error("Unlock error:", e);
-                    // Fallback nếu lỗi
-                    setTimeout(() => {
-                        speak(currentLanguage === 'vi' ? 'Chào bé' : 'Hello');
-                    }, 300);
-                });
+                setTimeout(() => {
+                    speakText(currentLanguage === 'vi' ? 'Chào bé' : 'Hello');
+                }, 300);
 
                 generateRandomLesson();
             }
@@ -323,7 +380,7 @@
                 if (currentIndex >= targetNumbers.length) return;
                 const currentSlot = document.getElementById(`slot-${currentIndex}`);
                 currentSlot.innerText = num;
-
+                6
                 if (num === targetNumbers[currentIndex]) {
                     currentSlot.classList.add('correct');
                     speakNum(num);
@@ -343,7 +400,7 @@
             }
         </script>
 
-        <div class="version-label" id="debug-version">V27.004 (Google TTS Unlocked)</div>
+        <div class="version-label" id="debug-version">V26.007 (Google File audio)</div>
 </body>
 
 </html>
