@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bé học số - Tương tác từng chữ</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f8f9fa; }
+        
+        .instruction { color: #95a5a6; font-size: 1.1rem; margin-bottom: 15px; font-weight: bold; }
+        
+        /* Khu vực các nút chữ số */
+        .word-container { display: flex; gap: 15px; margin-bottom: 30px; }
+        .word-btn { 
+            background: white; border: 2px solid #3498db; color: #3498db;
+            padding: 10px 15px; border-radius: 12px; font-weight: 800; font-size: 1.5rem;
+            cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;
+            transition: all 0.2s;
+        }
+        .word-btn:active { transform: scale(0.9); background-color: #3498db; color: white; }
+        .word-btn span { font-size: 0.8rem; } /* Icon loa nhỏ */
+
+        /* Khu vực hiển thị số đã bấm */
+        .input-slots { display: flex; gap: 20px; margin-bottom: 40px; }
+        .slot { 
+            width: 55px; height: 60px; border-bottom: 5px solid #bdc3c7; 
+            font-size: 2.5rem; font-weight: bold; text-align: center; 
+            display: flex; align-items: center; justify-content: center; color: #2c3e50;
+        }
+        .correct { color: #2ecc71 !important; border-bottom-color: #2ecc71 !important; }
+        .wrong { color: #e74c3c !important; border-bottom-color: #e74c3c !important; }
+
+        /* Bàn phím số */
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 320px; }
+        .keypad button { 
+            background-color: #3498db; color: white; border: none; padding: 20px; 
+            font-size: 1.8rem; border-radius: 18px; cursor: pointer; 
+            box-shadow: 0 5px #2980b9; 
+        }
+        .keypad button:active { box-shadow: 0 0 #2980b9; transform: translateY(4px); }
+        .btn-reset { background-color: #f1c40f !important; box-shadow: 0 5px #f39c12 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="instruction">NHẤN VÀO CHỮ ĐỂ NGHE:</div>
+    
+    <div class="word-container">
+        <button class="word-btn" onclick="speakWord('Six')">SIX <span>🔊</span></button>
+        <button class="word-btn" onclick="speakWord('Two')">TWO <span>🔊</span></button>
+        <button class="word-btn" onclick="speakWord('Eight')">EIGHT <span>🔊</span></button>
+        <button class="word-btn" onclick="speakWord('Two')">TWO <span>🔊</span></button>
+    </div>
+
+    <div class="input-slots">
+        <div class="slot" id="slot-0"></div>
+        <div class="slot" id="slot-1"></div>
+        <div class="slot" id="slot-2"></div>
+        <div class="slot" id="slot-3"></div>
+    </div>
+
+    <div class="keypad">
+        <button onclick="press(1)">1</button>
+        <button onclick="press(2)">2</button>
+        <button onclick="press(3)">3</button>
+        <button onclick="press(4)">4</button>
+        <button onclick="press(5)">5</button>
+        <button onclick="press(6)">6</button>
+        <button onclick="press(7)">7</button>
+        <button onclick="press(8)">8</button>
+        <button onclick="press(9)">9</button>
+        <div style="visibility: hidden;"></div>
+        <button onclick="press(0)">0</button>
+        <button class="btn-reset" onclick="reset()">✕</button>
+    </div>
+
+    <script>
+        const targetNumbers = [6, 2, 8, 2];
+        let currentIndex = 0;
+
+        // Hàm đọc từng chữ khi nhấn vào nút phía trên
+        function speakWord(word) {
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function press(num) {
+            if (currentIndex >= targetNumbers.length) return;
+
+            const currentSlot = document.getElementById(`slot-${currentIndex}`);
+            currentSlot.innerText = num;
+
+            if (num === targetNumbers[currentIndex]) {
+                currentSlot.classList.add('correct');
+                // Nếu đúng, có thể tự động đọc số đó bằng tiếng Việt hoặc Anh
+                speakWord(num.toString());
+            } else {
+                currentSlot.classList.add('wrong');
+            }
+
+            currentIndex++;
+        }
+
+        function reset() {
+            currentIndex = 0;
+            for (let i = 0; i < 4; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                slot.innerText = "";
+                slot.classList.remove('correct', 'wrong');
+            }
+        }
+    </script>
+</body>
+</html>
