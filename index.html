@@ -243,102 +243,107 @@
         <div style="visibility: hidden;"></div>
         <button onclick="press(0)">0</button>
         <button class="btn-reset" onclick="reset()">✕</button>
-    </div>
+        <audio id="ttsAudio"></audio>
 
-    <script>
-        const numWords = {
-            'en': ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'],
-            'vi': ['Không', 'Một', 'Hai', 'Ba', 'Bốn', 'Năm', 'Sáu', 'Bảy', 'Tám', 'Chín']
-        };
+        <script>
+            const numWords = {
+                'en': ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'],
+                'vi': ['Không', 'Một', 'Hai', 'Ba', 'Bốn', 'Năm', 'Sáu', 'Bảy', 'Tám', 'Chín']
+            };
 
-        let currentLanguage = 'en';
-        let targetNumbers = [];
-        let currentIndex = 0;
-        let audioContextUnlocked = false; // Biến kiểm tra đã mở khóa âm thanh chưa
+            let currentLanguage = 'en';
+            let targetNumbers = [];
+            let currentIndex = 0;
+            let ttsAudio;
 
-        // Hàm quan trọng nhất: Dùng SpeechSynthesis (ổn định hơn link Google)
-        function speak(text) {
-            // Dừng mọi âm thanh cũ để tránh chồng chéo
-            window.speechSynthesis.cancel();
+            function speak(text) {
+                if (!ttsAudio) ttsAudio = document.getElementById('ttsAudio');
+                const lang = currentLanguage === 'vi' ? 'vi-VN' : 'en-US';
+                const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${lang}&q=${encodeURIComponent(text)}`;
+                ttsAudio.src = url;
+                ttsAudio.play().catch(e => console.error("Audio error:", e));
+            }
 
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = currentLanguage === 'vi' ? 'vi-VN' : 'en-US';
-            utterance.rate = 0.8;
-            utterance.volume = 1.0;
-
-            // Mẹo cho iOS: Giữ biến utterance không bị xóa khỏi bộ nhớ
-            window.currentUtterance = utterance;
-            window.speechSynthesis.speak(utterance);
-        }
-
-        function speakNum(num) {
-            const word = numWords[currentLanguage][num];
-            speak(word);
-        }
-
-        function speakAllNumbers() {
-            const words = targetNumbers.map(num => numWords[currentLanguage][num]).join(', ');
-            speak(words);
-        }
-
-        // Hàm khởi tạo sau khi bé nhấn nút Bắt đầu
-        function startApp() {
-            document.getElementById('overlay').style.display = 'none'; // Ẩn màn hình chờ
-            audioContextUnlocked = true;
-
-            // Phát một âm thanh chào mừng để mở khóa hệ thống
-            speak(currentLanguage === 'vi' ? 'Chào bé' : 'Hello');
-
-            generateRandomLesson();
-        }
-
-        function changeLanguage() {
-            currentLanguage = document.getElementById('lang-select').value;
-            renderWords();
-        }
-
-        function renderWords() {
-            const wordContainer = document.getElementById('word-container');
-            wordContainer.innerHTML = targetNumbers.map(num => {
+            function speakNum(num) {
                 const word = numWords[currentLanguage][num];
-                return `<button class="word-btn" onclick="speakNum(${num})">${word.toUpperCase()} <span>🔊</span></button>`;
-            }).join('');
-        }
-
-        function generateRandomLesson() {
-            targetNumbers = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10));
-            currentIndex = 0;
-            renderWords();
-
-            const inputSlots = document.getElementById('input-slots');
-            inputSlots.innerHTML = targetNumbers.map((_, i) => `<div class="slot" id="slot-${i}"></div>`).join('');
-        }
-
-        function press(num) {
-            if (currentIndex >= targetNumbers.length) return;
-            const currentSlot = document.getElementById(`slot-${currentIndex}`);
-            currentSlot.innerText = num;
-
-            if (num === targetNumbers[currentIndex]) {
-                currentSlot.classList.add('correct');
-                speakNum(num);
-            } else {
-                currentSlot.classList.add('wrong');
+                speak(word);
             }
-            currentIndex++;
-        }
 
-        function reset() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                const slot = document.getElementById(`slot-${currentIndex}`);
-                slot.innerText = "";
-                slot.classList.remove('correct', 'wrong');
+            function speakAllNumbers() {
+                const words = targetNumbers.map(num => numWords[currentLanguage][num]).join(', ');
+                speak(words);
             }
-        }
-    </script>
 
-    <div class="version-label" id="debug-version">V26.002 (Google TTS)</div>
+            // Hàm khởi tạo sau khi bé nhấn nút Bắt đầu
+            function startApp() {
+                document.getElementById('overlay').style.display = 'none'; // Ẩn màn hình chờ
+
+                ttsAudio = document.getElementById('ttsAudio');
+                // Phát âm thanh câm (silent) để "mở khóa" audio trên trình duyệt di động
+                ttsAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+
+                ttsAudio.play().then(() => {
+                    setTimeout(() => {
+                        speak(currentLanguage === 'vi' ? 'Chào bé' : 'Hello');
+                    }, 300);
+                }).catch(e => {
+                    console.error("Unlock error:", e);
+                    // Fallback nếu lỗi
+                    setTimeout(() => {
+                        speak(currentLanguage === 'vi' ? 'Chào bé' : 'Hello');
+                    }, 300);
+                });
+
+                generateRandomLesson();
+            }
+
+            function changeLanguage() {
+                currentLanguage = document.getElementById('lang-select').value;
+                renderWords();
+            }
+
+            function renderWords() {
+                const wordContainer = document.getElementById('word-container');
+                wordContainer.innerHTML = targetNumbers.map(num => {
+                    const word = numWords[currentLanguage][num];
+                    return `<button class="word-btn" onclick="speakNum(${num})">${word.toUpperCase()} <span>🔊</span></button>`;
+                }).join('');
+            }
+
+            function generateRandomLesson() {
+                targetNumbers = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10));
+                currentIndex = 0;
+                renderWords();
+
+                const inputSlots = document.getElementById('input-slots');
+                inputSlots.innerHTML = targetNumbers.map((_, i) => `<div class="slot" id="slot-${i}"></div>`).join('');
+            }
+
+            function press(num) {
+                if (currentIndex >= targetNumbers.length) return;
+                const currentSlot = document.getElementById(`slot-${currentIndex}`);
+                currentSlot.innerText = num;
+
+                if (num === targetNumbers[currentIndex]) {
+                    currentSlot.classList.add('correct');
+                    speakNum(num);
+                } else {
+                    currentSlot.classList.add('wrong');
+                }
+                currentIndex++;
+            }
+
+            function reset() {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    const slot = document.getElementById(`slot-${currentIndex}`);
+                    slot.innerText = "";
+                    slot.classList.remove('correct', 'wrong');
+                }
+            }
+        </script>
+
+        <div class="version-label" id="debug-version">V27.001 (Google TTS Unlocked)</div>
 </body>
 
 </html>
