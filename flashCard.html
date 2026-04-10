@@ -1,188 +1,385 @@
 <!DOCTYPE html>
-
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bé Học Tiếng Anh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bé Học Tiếng Anh - Chọn Chủ Đề</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
 
     <style>
         body {
             margin: 0;
-            font-family: Arial;
-            background: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e272e;
+            color: white;
+            overflow: hidden;
         }
 
+        /* Nút nổi */
+        .btn-float {
+            position: fixed;
+            top: 15px;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            z-index: 1000;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        .btn-float:active { transform: scale(0.95); }
+        .btn-home { left: 15px; background: #3498db; color: white; }
+        .btn-back-themes { right: 15px; background: #f1c40f; color: #2c3e50; display: none; }
+
+        /* Màn hình chọn chủ đề */
+        #theme-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #1e272e;
+            z-index: 500;
+            position: absolute;
+            width: 100%;
+            top: 0; left: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #theme-screen h1 {
+            font-size: 2.2rem;
+            color: #f1c40f;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .theme-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 25px 10px;
+            background: white;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .theme-btn:active { transform: scale(0.95); }
+        .theme-btn span { font-size: 3.5rem; margin-bottom: 15px; }
+
+        /* Màn hình Swiper */
         .swiper {
             height: 100vh;
+            display: none;
+            background: #000;
         }
-
         .swiper-slide {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: white;
             text-align: center;
         }
 
-        img {
+        /* Thẻ học */
+        .card-img {
             width: 320px;
             height: 320px;
-            border-radius: 20px;
+            border-radius: 30px;
             object-fit: cover;
-            border: 5px solid white;
-            margin-bottom: 20px;
+            border: 6px solid white;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+            background: white;
         }
-
-        h1 {
-            font-size: 45px;
-            margin: 10px;
+        .card-en {
+            font-size: 50px;
+            margin: 10px 0;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #f1c40f;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+            text-transform: capitalize;
         }
-
-        .vn {
-            font-size: 26px;
+        .card-vn {
+            font-size: 30px;
             opacity: 0.9;
-            margin-bottom: 20px;
-        }
-
-        button {
-            padding: 15px 25px;
-            border: none;
-            border-radius: 40px;
-            font-size: 18px;
-            margin: 10px;
-            cursor: pointer;
+            margin-bottom: 30px;
+            color: #ecf0f1;
             font-weight: bold;
         }
 
-        .btn-en {
-            background: #2ed573;
-            color: white;
+        /* Nút phát âm */
+        .speak-buttons {
+            display: flex;
+            gap: 15px;
         }
+        .btn-speak {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+        }
+        .btn-speak:active { transform: translateY(3px); box-shadow: 0 2px rgba(0,0,0,0.2); }
+        .btn-en { background: #2ed573; color: white; }
+        .btn-vn { background: #ff4757; color: white; }
 
-        .btn-vn {
-            background: #ff4757;
-            color: white;
+        /* Hướng dẫn vuốt */
+        .swipe-guide {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.7);
+            pointer-events: none;
+            z-index: 10;
+            animation: bounce 1.5s infinite;
+            display: none;
+            font-weight: bold;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 20px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -15px); }
         }
     </style>
-
 </head>
-
 <body>
 
-    <!-- Nút về trang chủ -->
-    <a href="index.html" style="position: fixed; top: 20px; left: 20px; background: #3498db; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; box-shadow: 0 4px #2980b9; z-index: 1000; font-family: Arial, sans-serif;">
-        ◀️ Bé Học Số
-    </a>
+    <!-- Nút điều hướng chung -->
+    <a href="index.html" class="btn-float btn-home">◀️ Bé Học Số</a>
+    <button onclick="showThemes()" class="btn-float btn-back-themes" id="btn-back">🗂️ Đổi Chủ Đề</button>
 
+    <!-- Màn hình chọn chủ đề -->
+    <div id="theme-screen">
+        <h1>BÉ CHỌN CHỦ ĐỀ NÀO?</h1>
+        <div class="theme-grid">
+            <button class="theme-btn" style="color: #8e44ad;" onclick="loadTheme('alphabet')"><span>🔤</span> Chữ Cái</button>
+            <button class="theme-btn" style="color: #f39c12;" onclick="loadTheme('numbers')"><span>🔢</span> Chữ Số</button>
+            <button class="theme-btn" style="color: #e67e22;" onclick="loadTheme('animals')"><span>🐶</span> Động Vật</button>
+            <button class="theme-btn" style="color: #e74c3c;" onclick="loadTheme('fruits')"><span>🍎</span> Trái Cây</button>
+            <button class="theme-btn" style="color: #3498db;" onclick="loadTheme('vehicles')"><span>🚗</span> Xe Cộ</button>
+            <button class="theme-btn" style="color: #9b59b6;" onclick="loadTheme('colors')"><span>🌈</span> Màu Sắc</button>
+        </div>
+    </div>
+
+    <!-- Tự động phát âm thanh -->
     <audio id="ttsAudio"></audio>
-    <div class="swiper">
+
+    <!-- Swiper chứa thẻ bài -->
+    <div class="swiper" id="main-swiper">
         <div class="swiper-wrapper" id="slides"></div>
+        <div class="swipe-guide" id="swipe-guide">↕️ Vuốt dọc để xem ảnh khác</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
 
     <script>
+        // CSDL Từ vựng lấy ảnh từ nguồn Unsplash và Placehold (Màu)
+        const database = {
+            animals: [
+                { vn: "Con Mèo", en: "cat", img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&q=80" },
+                { vn: "Con Chó", en: "dog", img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&q=80" },
+                { vn: "Con Voi", en: "elephant", img: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=600&q=80" },
+                { vn: "Con Sư Tử", en: "lion", img: "https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?w=600&q=80" },
+                { vn: "Con Khỉ", en: "monkey", img: "https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=600&q=80" },
+                { vn: "Con Lợn", en: "pig", img: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=600&q=80" },
+                { vn: "Con Chim", en: "bird", img: "https://images.unsplash.com/photo-1552728089-571ebd13bb32?w=600&q=80" },
+                { vn: "Con Cá", en: "fish", img: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be1?w=600&q=80" }
+            ],
+            fruits: [
+                { vn: "Quả Táo", en: "apple", img: "https://images.unsplash.com/photo-1560806887-1e4cd0b6caa6?w=600&q=80" },
+                { vn: "Quả Chuối", en: "banana", img: "https://images.unsplash.com/photo-1528825871115-3581a5387919?w=600&q=80" },
+                { vn: "Quả Cam", en: "orange", img: "https://images.unsplash.com/photo-1547514701-427221017958?w=600&q=80" },
+                { vn: "Quả Nho", en: "grape", img: "https://images.unsplash.com/photo-1596363505729-41f7a4768820?w=600&q=80" },
+                { vn: "Dưa Hấu", en: "watermelon", img: "https://images.unsplash.com/photo-1589984662646-e7b2e4962f18?w=600&q=80" },
+                { vn: "Quả Dâu Tây", en: "strawberry", img: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=600&q=80" },
+                { vn: "Quả Xoài", en: "mango", img: "https://images.unsplash.com/photo-1553279768-865429fa0078?w=600&q=80" }
+            ],
+            vehicles: [
+                { vn: "Ô Tô", en: "car", img: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=80" },
+                { vn: "Xe Đạp", en: "bicycle", img: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&q=80" },
+                { vn: "Máy Bay", en: "airplane", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80" },
+                { vn: "Tàu Hỏa", en: "train", img: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=600&q=80" },
+                { vn: "Xe Buýt", en: "bus", img: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&q=80" },
+                { vn: "Tàu Thủy", en: "boat", img: "https://images.unsplash.com/photo-1561021463-b82755e1c8ce?w=600&q=80" },
+                { vn: "Xe Máy", en: "motorcycle", img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&q=80" }
+            ],
+            colors: [
+                { vn: "Màu Đỏ", en: "red", img: "https://placehold.co/600x600/e74c3c/e74c3c.png" },
+                { vn: "Màu Xanh Dương", en: "blue", img: "https://placehold.co/600x600/3498db/3498db.png" },
+                { vn: "Màu Xanh Lá", en: "green", img: "https://placehold.co/600x600/2ecc71/2ecc71.png" },
+                { vn: "Màu Vàng", en: "yellow", img: "https://placehold.co/600x600/f1c40f/f1c40f.png" },
+                { vn: "Màu Cam", en: "orange", img: "https://placehold.co/600x600/e67e22/e67e22.png" },
+                { vn: "Màu Tím", en: "purple", img: "https://placehold.co/600x600/9b59b6/9b59b6.png" },
+                { vn: "Màu Đen", en: "black", img: "https://placehold.co/600x600/2c3e50/2c3e50.png" },
+                { vn: "Màu Trắng", en: "white", img: "https://placehold.co/600x600/ffffff/ffffff.png" },
+                { vn: "Màu Nâu", en: "brown", img: "https://placehold.co/600x600/8B4513/8B4513.png" }
+            ]
+        };
 
-        const vocab = [
+        // Tạo danh sách bảng chữ cái
+        database.alphabet = [];
+        const engLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (let i = 0; i < engLetters.length; i++) {
+            const letter = engLetters[i];
+            database.alphabet.push({
+                vn: "Chữ cái: " + letter,
+                en: letter,
+                img: `https://placehold.co/600x600/8e44ad/ffffff.png?text=${letter}`
+            });
+        }
 
-            { vn: "Quả Táo", en: "apple", img: "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg" },
-            { vn: "Con Mèo", en: "cat", img: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg" },
-            { vn: "Quả Chuối", en: "banana", img: "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg" },
-            { vn: "Con Chó", en: "dog", img: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Golde33443.jpg" },
-            { vn: "Con Voi", en: "elephant", img: "https://upload.wikimedia.org/wikipedia/commons/3/37/African_Bush_Elephant.jpg" },
-            { vn: "Con Sư Tử", en: "lion", img: "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg" },
-            { vn: "Quả Cam", en: "orange", img: "https://upload.wikimedia.org/wikipedia/commons/c/c4/Orange-Fruit-Pieces.jpg" },
-            { vn: "Con Cá", en: "fish", img: "https://upload.wikimedia.org/wikipedia/commons/1/17/Clown_fish_in_the_Andaman_Coral_Reef.jpg" },
-            { vn: "Con Chim", en: "bird", img: "https://upload.wikimedia.org/wikipedia/commons/5/5c/House_sparrow04.jpg" }
+        // Tạo danh sách số từ 1 đến 30
+        database.numbers = [];
+        const numWordsEn = ['Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty','Twenty-One','Twenty-Two','Twenty-Three','Twenty-Four','Twenty-Five','Twenty-Six','Twenty-Seven','Twenty-Eight','Twenty-Nine','Thirty'];
+        const numWordsVn = ['Không','Một','Hai','Ba','Bốn','Năm','Sáu','Bảy','Tám','Chín','Mười','Mười Một','Mười Hai','Mười Ba','Mười Bốn','Mười Lăm','Mười Sáu','Mười Bảy','Mười Tám','Mười Chín','Hai Mươi','Hai Mươi Mốt','Hai Mươi Hai','Hai Mươi Ba','Hai Mươi Bốn','Hai Mươi Lăm','Hai Mươi Sáu','Hai Mươi Bảy','Hai Mươi Tám','Hai Mươi Chín','Ba Mươi'];
+        for (let i = 1; i <= 30; i++) {
+            database.numbers.push({
+                vn: numWordsVn[i],
+                en: numWordsEn[i],
+                img: `https://placehold.co/600x600/f39c12/ffffff.png?text=${i}`
+            });
+        }
 
-        ]
-
-        const slides = document.getElementById("slides")
-
-        vocab.forEach(word => {
-
-            slides.innerHTML += `
-
-<div class="swiper-slide">
-
-<img src="${word.img}">
-
-<h1>${word.en}</h1>
-
-<div class="vn">${word.vn}</div>
-
-<div>
-
-<button class="btn-en" onclick="speak('${word.en}','en')">🔊 English</button>
-
-<button class="btn-vn" onclick="speak('${word.vn}','vi')">🔊 Tiếng Việt</button>
-
-</div>
-
-</div>
-
-`
-
-        })
-
+        let currentSwiper = null;
         let ttsAudio;
+        let currentThemeWords = [];
 
+        // Mở khóa Audio trên hệ thống iOS/Android
+        function initAudioUnlock() {
+            if (!ttsAudio) ttsAudio = document.getElementById('ttsAudio');
+            if (ttsAudio && !ttsAudio.unlocked) {
+                ttsAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+                ttsAudio.play().then(() => ttsAudio.unlocked = true).catch(e => {});
+            }
+        }
+
+        // Đọc TTS của Google
         function speak(text, lang) {
             if (!ttsAudio) ttsAudio = document.getElementById('ttsAudio');
             
             const ttsLang = lang == "en" ? "en-US" : "vi-VN";
             if (ttsAudio) {
-                const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${ttsLang}&q=${encodeURIComponent(text)}`;
+                const url = \`https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=\${ttsLang}&q=\${encodeURIComponent(text)}\`;
                 ttsAudio.src = url;
-                ttsAudio.play().catch(e => {
-                    console.error("Audio play error:", e);
-                    fallbackSpeak(text, ttsLang);
-                });
+                ttsAudio.play().catch(e => fallbackSpeak(text, ttsLang));
             } else {
                 fallbackSpeak(text, ttsLang);
             }
         }
 
+        // Đọc dự phòng
         function fallbackSpeak(text, lang) {
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = lang;
             msg.rate = 0.9;
             msg.pitch = 1.1;
-            speechSynthesis.cancel();
-            speechSynthesis.speak(msg);
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(msg);
         }
 
-        // Mở khóa âm thanh Google TTS cho thiết bị di động khi chạm lần đầu
-        function initAudioUnlock() {
-            if (!ttsAudio) ttsAudio = document.getElementById('ttsAudio');
-            if (ttsAudio) {
-                ttsAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
-                ttsAudio.play().catch(e => {});
+        // Nạp và hiển thị chủ đề
+        function loadTheme(themeKey) {
+            initAudioUnlock();
+            
+            currentThemeWords = database[themeKey];
+            const slidesContainer = document.getElementById("slides");
+            slidesContainer.innerHTML = '';
+            
+            currentThemeWords.forEach(word => {
+                slidesContainer.innerHTML += \`
+                <div class="swiper-slide">
+                    <img src="\${word.img}" class="card-img" alt="\${word.en}">
+                    <h1 class="card-en">\${word.en}</h1>
+                    <div class="card-vn">\${word.vn}</div>
+                    <div class="speak-buttons">
+                        <button class="btn-speak btn-en" onclick="speak('\${word.en}', 'en')">🔊 English</button>
+                        <button class="btn-speak btn-vn" onclick="speak('\${word.vn}', 'vi')">🔊 Tiếng Việt</button>
+                    </div>
+                </div>\`;
+            });
+
+            // Chuyển màn hình
+            document.getElementById('theme-screen').style.display = 'none';
+            document.getElementById('main-swiper').style.display = 'block';
+            document.getElementById('btn-back').style.display = 'flex';
+            document.getElementById('swipe-guide').style.display = 'block';
+
+            // Reset lặp lại Swiper nếu đã có
+            if (currentSwiper) {
+                currentSwiper.destroy();
             }
+
+            // Khởi tạo Swiper Lặp Vô Tận
+            currentSwiper = new Swiper('.swiper', {
+                direction: 'vertical',
+                loop: true,                 // Lặp vô tận thẻ
+                mousewheel: true,           // Hỗ trợ chuột cuộn
+                grabCursor: true,
+                on: {
+                    slideChange: function () {
+                        // Lấy chỉ mục thật trong vòng lặp vô tận
+                        const index = this.realIndex;
+                        if (currentThemeWords[index]) {
+                            speak(currentThemeWords[index].en, 'en');
+                        }
+                    }
+                }
+            });
+
+            // Đọc thẻ đầu tiên ngay khi mở
+            setTimeout(() => {
+                speak(currentThemeWords[0].en, 'en');
+            }, 600);
         }
-        
-        document.addEventListener('click', initAudioUnlock, { once: true });
-        document.addEventListener('touchstart', initAudioUnlock, { once: true });
 
-        const swiper = new Swiper('.swiper', {
-            direction: 'vertical',
-            mousewheel: true
-        })
-
-        swiper.on('slideChange', () => {
-
-            const word = vocab[swiper.activeIndex]
-            speak(word.en, 'en')
-
-        })
-
+        // Trở về Menu chính
+        function showThemes() {
+            document.getElementById('theme-screen').style.display = 'flex';
+            document.getElementById('main-swiper').style.display = 'none';
+            document.getElementById('btn-back').style.display = 'none';
+            document.getElementById('swipe-guide').style.display = 'none';
+            
+            if (currentSwiper) {
+                currentSwiper.destroy();
+                currentSwiper = null;
+            }
+            if (ttsAudio) {
+                ttsAudio.pause();
+            }
+            window.speechSynthesis.cancel();
+        }
     </script>
-
 </body>
-
 </html>
