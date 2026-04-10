@@ -291,7 +291,7 @@
             
             const ttsLang = lang == "en" ? "en-US" : "vi-VN";
             if (ttsAudio) {
-                const url = \`https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=\${ttsLang}&q=\${encodeURIComponent(text)}\`;
+                const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${ttsLang}&q=${encodeURIComponent(text)}`;
                 ttsAudio.src = url;
                 ttsAudio.play().catch(e => fallbackSpeak(text, ttsLang));
             } else {
@@ -318,16 +318,16 @@
             slidesContainer.innerHTML = '';
             
             currentThemeWords.forEach(word => {
-                slidesContainer.innerHTML += \`
+                slidesContainer.innerHTML += `
                 <div class="swiper-slide">
-                    <img src="\${word.img}" class="card-img" alt="\${word.en}">
-                    <h1 class="card-en">\${word.en}</h1>
-                    <div class="card-vn">\${word.vn}</div>
+                    <img src="${word.img}" class="card-img" alt="${word.en}">
+                    <h1 class="card-en">${word.en}</h1>
+                    <div class="card-vn">${word.vn}</div>
                     <div class="speak-buttons">
-                        <button class="btn-speak btn-en" onclick="speak('\${word.en}', 'en')">🔊 English</button>
-                        <button class="btn-speak btn-vn" onclick="speak('\${word.vn}', 'vi')">🔊 Tiếng Việt</button>
+                        <button class="btn-speak btn-en" onclick="speak('${word.en}', 'en')">🔊 English</button>
+                        <button class="btn-speak btn-vn" onclick="speak('${word.vn}', 'vi')">🔊 Tiếng Việt</button>
                     </div>
-                </div>\`;
+                </div>`;
             });
 
             // Chuyển màn hình
