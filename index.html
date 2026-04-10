@@ -302,22 +302,35 @@
             };
             const speechSupported = 'speechSynthesis' in window;
 
-            function speakText(text) {
-                if (speechSupported) {
+            function fallbackSpeakText(text, langCode) {
+                if ('speechSynthesis' in window) {
                     const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = currentLanguage === 'vi' ? 'vi-VN' : 'en-US';
+                    utterance.lang = langCode;
                     utterance.volume = 1;
                     utterance.rate = 1;
                     utterance.pitch = 1;
+                    window.speechSynthesis.cancel();
                     window.speechSynthesis.speak(utterance);
-                    return;
                 }
+            }
 
+            function speakText(text) {
                 if (!ttsAudio) ttsAudio = document.getElementById('ttsAudio');
-                const lang = currentLanguage === 'vi' ? 'vi-VN' : 'en-US';
-                const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${lang}&q=${encodeURIComponent(text)}`;
-                ttsAudio.src = url;
-                ttsAudio.play().catch(e => console.error("Audio error:", e));
+
+                const lang = document.getElementById('lang-select').value;
+                const gLang = lang === 'en' ? 'en' : 'vi'; // Google TTS code
+                const fallbackLang = lang === 'en' ? 'en-US' : 'vi-VN'; // Web Speech API code
+
+                if (ttsAudio) {
+                    const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${gLang}&q=${encodeURIComponent(text)}`;
+                    ttsAudio.src = url;
+                    ttsAudio.play().catch(e => {
+                        console.log("Audio play failed, using fallback:", e);
+                        fallbackSpeakText(text, fallbackLang);
+                    });
+                } else {
+                    fallbackSpeakText(text, fallbackLang);
+                }
             }
 
             function playAudioForNumber(num) {
