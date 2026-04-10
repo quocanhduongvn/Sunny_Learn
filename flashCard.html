@@ -365,17 +365,19 @@
             <div id="edge-voice-settings" style="display:none; margin-top:15px;">
                 <div style="text-align: left; margin-bottom: 5px; font-weight:bold;">Giọng Tiếng Anh (Cao cấp):</div>
                 <select id="edge-en" style="width:100%; padding:10px; border-radius:10px; border:2px solid #bdc3c7; outline:none; max-width: 100%;">
-                    <option value="en-US-AnaNeural">Ana (Bé Gái)</option>
-                    <option value="en-US-ChristopherNeural">Christopher (Bé Trai)</option>
-                    <option value="en-US-AriaNeural">Aria (Nữ Trưởng thành)</option>
-                    <option value="en-US-GuyNeural">Guy (Nam Trưởng thành)</option>
-                    <option value="en-US-JennyNeural">Jenny (Nữ chuẩn)</option>
+                    <option value="en-US-AnaNeural">Ana (Bé Gái - Mỹ)</option>
+                    <option value="en-US-ChristopherNeural">Christopher (Bé Trai - Mỹ)</option>
+                    <option value="en-US-EricNeural">Eric (Trẻ em - Mỹ)</option>
+                    <option value="en-GB-SoniaNeural">Sonia (Nữ - Anh)</option>
+                    <option value="en-GB-RyanNeural">Ryan (Nam - Anh)</option>
+                    <option value="en-US-JennyNeural">Jenny (Nữ chuẩn - Mỹ)</option>
+                    <option value="en-US-GuyNeural">Guy (Nam chuẩn - Mỹ)</option>
                 </select>
                 
                 <div style="text-align: left; margin-bottom: 5px; margin-top: 10px; font-weight:bold;">Giọng Tiếng Việt (Cao cấp):</div>
                 <select id="edge-vi" style="width:100%; padding:10px; border-radius:10px; border:2px solid #bdc3c7; outline:none; max-width: 100%;">
                     <option value="vi-VN-HoaiMyNeural">Hoài My (Nữ chuẩn)</option>
-                    <option value="vi-VN-NamMinhNeural">Nam Minh (Nam chuẩn)</option>
+                    <option value="vi-VN-NamMinhNeural">Nam Minh (Nam trầm)</option>
                 </select>
             </div>
 
@@ -605,24 +607,26 @@
         function playEdgeTTS(text, lang, speed) {
             const voice = lang === 'en' ? (ttsSettings.edgeEn || 'en-US-AnaNeural') : (ttsSettings.edgeVi || 'vi-VN-HoaiMyNeural');
             const cacheKey = voice + "_" + text;
+            const xmlLang = lang === 'en' ? 'en-US' : 'vi-VN';
             
             if (edgeBlobCache[cacheKey]) {
                 ttsAudio.src = edgeBlobCache[cacheKey];
-                ttsAudio.playbackRate = speed;
-                ttsAudio.play().catch(e => fallbackSpeak(text, lang));
+                ttsAudio.oncanplaythrough = () => {
+                    ttsAudio.playbackRate = speed;
+                    ttsAudio.play().catch(e => {});
+                    ttsAudio.oncanplaythrough = null;
+                };
                 return;
             }
 
+            // Dùng token và endpoint ổn định nhất
             const ws = new WebSocket("wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4");
             let audioParts = [];
 
             ws.onopen = () => {
-                const reqId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                    return v.toString(16);
-                });
+                const reqId = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, c => (c=='x'?Math.random()*16|0:(Math.random()*16|0&0x3|0x8)).toString(16));
                 ws.send(`X-Timestamp:${new Date().toISOString()}\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`);
-                ws.send(`X-RequestId:${reqId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${new Date().toISOString()}\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'><voice name='${voice}'>${text}</voice></speak>`);
+                ws.send(`X-RequestId:${reqId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${new Date().toISOString()}\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${xmlLang}'><voice name='${voice}'>${text}</voice></speak>`);
             };
 
             ws.onmessage = async (e) => {
@@ -633,8 +637,11 @@
                         const url = URL.createObjectURL(blob);
                         edgeBlobCache[cacheKey] = url;
                         ttsAudio.src = url;
-                        ttsAudio.playbackRate = speed;
-                        ttsAudio.play().catch(err => fallbackSpeak(text, lang));
+                        ttsAudio.oncanplaythrough = () => {
+                            ttsAudio.playbackRate = speed;
+                            ttsAudio.play().catch(err => fallbackSpeak(text, lang));
+                            ttsAudio.oncanplaythrough = null;
+                        };
                     }
                 } else {
                     const buffer = await e.data.arrayBuffer();
@@ -646,12 +653,13 @@
                             break;
                         }
                     }
-                    if (headerEnd !== -1) {
-                        audioParts.push(buffer.slice(headerEnd));
-                    }
+                    if (headerEnd !== -1) audioParts.push(buffer.slice(headerEnd));
                 }
             };
-            ws.onerror = () => fallbackSpeak(text, lang);
+            ws.onerror = () => {
+                ws.close();
+                fallbackSpeak(text, lang);
+            };
         }
 
         // Mở khóa Audio trên hệ thống iOS/Android

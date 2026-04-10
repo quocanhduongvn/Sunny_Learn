@@ -211,25 +211,84 @@
 
         /* Modal Settings */
         .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 2500; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2500;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
+
         .modal-content {
-            background: white; color: #2c3e50; padding: 25px; border-radius: 20px; width: 100%; max-width: 350px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+            background: white;
+            color: #2c3e50;
+            padding: 25px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
         }
+
         .modal-content select {
-            width:100%; padding:10px; border-radius:10px; border:2px solid #bdc3c7; outline:none; font-size:1rem;
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #bdc3c7;
+            outline: none;
+            font-size: 1rem;
         }
-        .modal-actions { display: flex; gap: 10px; margin-top: 25px; }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
         .modal-btn {
-            flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 1.1rem;
-            font-weight: bold; cursor: pointer; color: white; transition: transform 0.2s;
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.2s;
         }
-        .modal-btn:active { transform: scale(0.95); }
-        .btn-save { background: #2ecc71; }
-        .btn-cancel { background: #e74c3c; }
-        .btn-settings { position: fixed; left: 15px; top: 15px; background: #7f8c8d; color: white; border: 2px solid #95a5a6; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; }
+
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-save {
+            background: #2ecc71;
+        }
+
+        .btn-cancel {
+            background: #e74c3c;
+        }
+
+        .btn-settings {
+            position: fixed;
+            left: 15px;
+            top: 15px;
+            background: #7f8c8d;
+            color: white;
+            border: 2px solid #95a5a6;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
     </style>
 </head>
 
@@ -240,7 +299,7 @@
     <div class="modal-overlay" id="settings-modal" style="z-index: 3000;">
         <div class="modal-content">
             <h2>⚙️ Cài Đặt Giọng Đọc</h2>
-            
+
             <div style="text-align: left; margin-bottom: 5px; font-weight:bold;">Nguồn âm thanh:</div>
             <select id="tts-engine" onchange="updateSettingsUI()">
                 <option value="google">Google Translate (Mạng/Ổn định)</option>
@@ -251,33 +310,41 @@
             <div id="system-voice-settings" style="display:none; margin-top:15px;">
                 <div style="text-align: left; margin-bottom: 5px; font-weight:bold;">Giọng Tiếng Anh:</div>
                 <select id="voice-en"></select>
-                
-                <div style="text-align: left; margin-bottom: 5px; margin-top: 10px; font-weight:bold;">Giọng Tiếng Việt:</div>
+
+                <div style="text-align: left; margin-bottom: 5px; margin-top: 10px; font-weight:bold;">Giọng Tiếng Việt:
+                </div>
                 <select id="voice-vi"></select>
             </div>
 
             <div id="edge-voice-settings" style="display:none; margin-top:15px;">
                 <div style="text-align: left; margin-bottom: 5px; font-weight:bold;">Giọng Tiếng Anh (Cao cấp):</div>
                 <select id="edge-en">
-                    <option value="en-US-AnaNeural">Ana (Bé Gái)</option>
-                    <option value="en-US-ChristopherNeural">Christopher (Bé Trai)</option>
-                    <option value="en-US-AriaNeural">Aria (Nữ Trưởng thành)</option>
-                    <option value="en-US-GuyNeural">Guy (Nam Trưởng thành)</option>
-                    <option value="en-US-JennyNeural">Jenny (Nữ chuẩn)</option>
+                    <option value="en-US-AnaNeural">Ana (Bé Gái - Mỹ)</option>
+                    <option value="en-US-ChristopherNeural">Christopher (Bé Trai - Mỹ)</option>
+                    <option value="en-US-EricNeural">Eric (Trẻ em - Mỹ)</option>
+                    <option value="en-GB-SoniaNeural">Sonia (Nữ - Anh)</option>
+                    <option value="en-GB-RyanNeural">Ryan (Nam - Anh)</option>
+                    <option value="en-US-JennyNeural">Jenny (Nữ chuẩn - Mỹ)</option>
+                    <option value="en-US-GuyNeural">Guy (Nam chuẩn - Mỹ)</option>
                 </select>
-                
-                <div style="text-align: left; margin-bottom: 5px; margin-top: 10px; font-weight:bold;">Giọng Tiếng Việt (Cao cấp):</div>
+
+                <div style="text-align: left; margin-bottom: 5px; margin-top: 10px; font-weight:bold;">Giọng Tiếng Việt
+                    (Cao cấp):</div>
                 <select id="edge-vi">
                     <option value="vi-VN-HoaiMyNeural">Hoài My (Nữ chuẩn)</option>
-                    <option value="vi-VN-NamMinhNeural">Nam Minh (Nam chuẩn)</option>
+                    <option value="vi-VN-NamMinhNeural">Nam Minh (Nam trầm)</option>
                 </select>
             </div>
 
-            <div style="text-align: left; margin-top: 20px; font-weight:bold;">Tốc độ đọc: <span id="speed-val">1.0</span>x</div>
-            <input type="range" id="tts-speed" min="0.5" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('speed-val').innerText = this.value" style="width: 100%; height:8px; margin-top:10px; border-radius:5px; appearance: none; background:#ecf0f1; outline:none;">
+            <div style="text-align: left; margin-top: 20px; font-weight:bold;">Tốc độ đọc: <span
+                    id="speed-val">1.0</span>x</div>
+            <input type="range" id="tts-speed" min="0.5" max="2.0" step="0.1" value="1.0"
+                oninput="document.getElementById('speed-val').innerText = this.value"
+                style="width: 100%; height:8px; margin-top:10px; border-radius:5px; appearance: none; background:#ecf0f1; outline:none;">
 
             <div class="modal-actions">
-                <button class="modal-btn btn-cancel" onclick="document.getElementById('settings-modal').style.display='none'">Đóng</button>
+                <button class="modal-btn btn-cancel"
+                    onclick="document.getElementById('settings-modal').style.display='none'">Đóng</button>
                 <button class="modal-btn btn-save" onclick="saveSettings()">Lưu & Thử</button>
             </div>
         </div>
@@ -386,13 +453,13 @@
             try {
                 const savedSettings = localStorage.getItem('sunny_tts_settings');
                 if (savedSettings) ttsSettings = JSON.parse(savedSettings);
-            } catch (e) {}
+            } catch (e) { }
 
             function populateVoices() {
                 sysVoices = window.speechSynthesis.getVoices();
                 const enSelect = document.getElementById('voice-en');
                 const viSelect = document.getElementById('voice-vi');
-                
+
                 enSelect.innerHTML = '<option value="">-- Mặc định --</option>';
                 viSelect.innerHTML = '<option value="">-- Mặc định --</option>';
 
@@ -416,9 +483,9 @@
                 document.getElementById('speed-val').innerText = ttsSettings.speed;
                 document.getElementById('edge-en').value = ttsSettings.edgeEn || 'en-US-AnaNeural';
                 document.getElementById('edge-vi').value = ttsSettings.edgeVi || 'vi-VN-HoaiMyNeural';
-                
+
                 if (sysVoices.length === 0) populateVoices();
-                
+
                 updateSettingsUI();
                 document.getElementById('settings-modal').style.display = 'flex';
             }
@@ -436,7 +503,7 @@
                 ttsSettings.voiceVi = document.getElementById('voice-vi').value;
                 ttsSettings.edgeEn = document.getElementById('edge-en').value;
                 ttsSettings.edgeVi = document.getElementById('edge-vi').value;
-                
+
                 localStorage.setItem('sunny_tts_settings', JSON.stringify(ttsSettings));
                 document.getElementById('settings-modal').style.display = 'none';
 
@@ -448,11 +515,16 @@
             function playEdgeTTS(text, lang, speed) {
                 const voice = lang === 'en' ? (ttsSettings.edgeEn || 'en-US-AnaNeural') : (ttsSettings.edgeVi || 'vi-VN-HoaiMyNeural');
                 const cacheKey = voice + "_" + text;
-                
+                const xmlLang = lang === 'en' ? 'en-US' : 'vi-VN';
+                const fallbackLang = lang === 'en' ? 'en-US' : 'vi-VN';
+
                 if (edgeBlobCache[cacheKey]) {
                     ttsAudio.src = edgeBlobCache[cacheKey];
-                    ttsAudio.playbackRate = speed;
-                    ttsAudio.play().catch(e => fallbackSpeakText(text, lang === 'en' ? 'en-US' : 'vi-VN'));
+                    ttsAudio.oncanplaythrough = () => {
+                        ttsAudio.playbackRate = speed;
+                        ttsAudio.play().catch(e => { });
+                        ttsAudio.oncanplaythrough = null;
+                    };
                     return;
                 }
 
@@ -460,12 +532,9 @@
                 let audioParts = [];
 
                 ws.onopen = () => {
-                    const reqId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                        return v.toString(16);
-                    });
+                    const reqId = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, c => (c == 'x' ? Math.random() * 16 | 0 : (Math.random() * 16 | 0 & 0x3 | 0x8)).toString(16));
                     ws.send(`X-Timestamp:${new Date().toISOString()}\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`);
-                    ws.send(`X-RequestId:${reqId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${new Date().toISOString()}\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'><voice name='${voice}'>${text}</voice></speak>`);
+                    ws.send(`X-RequestId:${reqId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${new Date().toISOString()}\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${xmlLang}'><voice name='${voice}'>${text}</voice></speak>`);
                 };
 
                 ws.onmessage = async (e) => {
@@ -476,32 +545,36 @@
                             const url = URL.createObjectURL(blob);
                             edgeBlobCache[cacheKey] = url;
                             ttsAudio.src = url;
-                            ttsAudio.playbackRate = speed;
-                            ttsAudio.play().catch(err => fallbackSpeakText(text, lang === 'en' ? 'en-US' : 'vi-VN'));
+                            ttsAudio.oncanplaythrough = () => {
+                                ttsAudio.playbackRate = speed;
+                                ttsAudio.play().catch(err => fallbackSpeakText(text, fallbackLang));
+                                ttsAudio.oncanplaythrough = null;
+                            };
                         }
                     } else {
                         const buffer = await e.data.arrayBuffer();
                         const view = new Uint8Array(buffer);
                         let headerEnd = -1;
                         for (let i = 0; i < view.length - 3; i++) {
-                            if (view[i] === 13 && view[i+1] === 10 && view[i+2] === 13 && view[i+3] === 10) {
+                            if (view[i] === 13 && view[i + 1] === 10 && view[i + 2] === 13 && view[i + 3] === 10) {
                                 headerEnd = i + 4;
                                 break;
                             }
                         }
-                        if (headerEnd !== -1) {
-                            audioParts.push(buffer.slice(headerEnd));
-                        }
+                        if (headerEnd !== -1) audioParts.push(buffer.slice(headerEnd));
                     }
                 };
-                ws.onerror = () => fallbackSpeakText(text, lang === 'en' ? 'en-US' : 'vi-VN');
+                ws.onerror = () => {
+                    ws.close();
+                    fallbackSpeakText(text, fallbackLang);
+                };
             }
 
             function fallbackSpeakText(text, langCode) {
                 if ('speechSynthesis' in window) {
                     const utterance = new SpeechSynthesisUtterance(text);
                     utterance.lang = langCode;
-                    
+
                     if (ttsSettings.engine === 'system') {
                         utterance.rate = ttsSettings.speed;
                         const targetVoiceName = langCode.startsWith("en") ? ttsSettings.voiceEn : ttsSettings.voiceVi;
@@ -512,7 +585,7 @@
                     } else {
                         utterance.rate = 1.0;
                     }
-                    
+
                     utterance.pitch = 1.0;
                     window.speechSynthesis.cancel();
                     window.speechSynthesis.speak(utterance);
@@ -521,7 +594,7 @@
 
             function speakText(text) {
                 if (!ttsAudio) ttsAudio = document.getElementById('ttsAudio');
-                
+
                 if (ttsAudio) ttsAudio.playbackRate = ttsSettings.speed;
 
                 const lang = document.getElementById('lang-select').value;
@@ -532,7 +605,7 @@
                     fallbackSpeakText(text, fallbackLang);
                     return;
                 }
-                
+
                 if (ttsSettings.engine === 'edge') {
                     playEdgeTTS(text, lang, ttsSettings.speed);
                     return;
@@ -552,7 +625,8 @@
 
             function playAudioForNumber(num) {
                 const audioSrc = soundMap[num];
-                if (audioSrc && ttsAudio) {
+                // Ưu tiên file MP3 chỉ khi dùng Google engine + Tiếng Anh
+                if (ttsSettings.engine === 'google' && currentLanguage === 'en' && audioSrc && ttsAudio) {
                     ttsAudio.src = audioSrc;
                     ttsAudio.play().catch(err => {
                         console.error('Audio file play error:', err);
@@ -560,6 +634,7 @@
                     });
                     return;
                 }
+                // Các trường hợp khác (Edge, System, hoặc Tiếng Việt) dùng TTS
                 speakText(numWords[currentLanguage][num]);
             }
 
@@ -568,34 +643,30 @@
             }
 
             function speakAllNumbers() {
-                if (!ttsAudio) {
-                    speakText(targetNumbers.map(num => numWords[currentLanguage][num]).join(' '));
-                    return;
-                }
+                const textToSpeak = targetNumbers.map(num => numWords[currentLanguage][num]).join(' ');
 
-                const sequence = targetNumbers.filter(num => soundMap[num]);
-                if (sequence.length === 0) {
-                    speakText(targetNumbers.map(num => numWords[currentLanguage][num]).join(' '));
-                    return;
-                }
-
-                let index = 0;
-                ttsAudio.onended = () => {
-                    index += 1;
-                    if (index < sequence.length) {
+                // Chế độ đọc từng số bằng MP3 chỉ áp dụng cho Google + English
+                if (ttsSettings.engine === 'google' && currentLanguage === 'en') {
+                    const sequence = targetNumbers.filter(num => soundMap[num]);
+                    if (sequence.length > 0) {
+                        let index = 0;
+                        ttsAudio.onended = () => {
+                            index += 1;
+                            if (index < sequence.length) {
+                                ttsAudio.src = soundMap[sequence[index]];
+                                ttsAudio.play().catch(err => speakText(textToSpeak));
+                            } else {
+                                ttsAudio.onended = null;
+                            }
+                        };
                         ttsAudio.src = soundMap[sequence[index]];
-                        ttsAudio.play().catch(err => {
-                            console.error('Audio sequence error:', err);
-                            speakText(targetNumbers.map(num => numWords[currentLanguage][num]).join(' '));
-                        });
+                        ttsAudio.play().catch(err => speakText(textToSpeak));
+                        return;
                     }
-                };
+                }
 
-                ttsAudio.src = soundMap[sequence[index]];
-                ttsAudio.play().catch(err => {
-                    console.error('Audio sequence start error:', err);
-                    speakText(targetNumbers.map(num => numWords[currentLanguage][num]).join(' '));
-                });
+                // Còn lại dùng TTS đọc nguyên câu
+                speakText(textToSpeak);
             }
 
             // Hàm khởi tạo sau khi bé nhấn nút Bắt đầu
@@ -693,7 +764,7 @@
             }
         </script>
 
-        <div class="version-label" id="debug-version">V26.003 (FlashCard)</div>
+        <div class="version-label" id="debug-version">V26.004 (change voice)</div>
 </body>
 
 </html>
