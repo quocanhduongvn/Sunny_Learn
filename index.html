@@ -377,9 +377,9 @@
                 viSelect.innerHTML = '<option value="">-- Mặc định --</option>';
 
                 sysVoices.forEach(voice => {
-                    const opt = `<option value="${voice.name}">${voice.name} (${voice.lang})</option>`;
-                    if (voice.lang.startsWith('en')) enSelect.innerHTML += opt;
-                    if (voice.lang.startsWith('vi')) viSelect.innerHTML += opt;
+                    const opt = `<option value="${voice.name}">${voice.name} (${voice.lang || 'Khác'})</option>`;
+                    enSelect.innerHTML += opt;
+                    viSelect.innerHTML += opt;
                 });
 
                 enSelect.value = ttsSettings.voiceEn || '';
