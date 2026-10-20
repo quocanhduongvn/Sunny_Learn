@@ -10,6 +10,7 @@
     <title>Sunny Panda 🐼 - Bé Học Tiếng Anh Cùng Gấu Trúc (4-5 Tuổi)</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
+    <link rel="apple-touch-icon" href="images/icon-192.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/app.css">
 </head>
@@ -32,6 +33,11 @@
                 <span>⭐</span>
                 <span class="star-count-badge">0</span>
             </div>
+
+            <!-- Install PWA App Button -->
+            <button class="btn-header" id="btn-pwa-install" onclick="promptInstallPWA()" style="background:#2ED573; color:white; border-color:#26AF61; box-shadow:0 4px 0 #218c4e;" title="Cài đặt ứng dụng về máy">
+                📲 Cài App
+            </button>
 
             <!-- BGM Toggle -->
             <button class="btn-header" id="btn-bgm-toggle" title="Bật/Tắt nhạc nền vui nhộn">
@@ -185,6 +191,53 @@
     <script src="js/mascot.js"></script>
     <script src="js/games.js"></script>
     <script src="js/app.js"></script>
+
+    <!-- PWA INSTALLATION & SERVICE WORKER -->
+    <script>
+        let deferredInstallPrompt = null;
+        const installBtn = document.getElementById('btn-pwa-install');
+
+        // Capture PWA install event on Chrome / Edge / Android
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            if (installBtn) installBtn.style.display = 'flex';
+        });
+
+        function promptInstallPWA() {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                deferredInstallPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        if (installBtn) installBtn.style.display = 'none';
+                    }
+                    deferredInstallPrompt = null;
+                });
+            } else {
+                // If on iOS or browser already installed
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    alert("👉 Cách cài đặt trên iPad/iPhone:\n1. Bấm nút Chia sẻ (biểu tượng ô vuông mũi tên lên ⎋)\n2. Chọn 'Thêm vào màn hình chính' (Add to Home Screen)!");
+                } else {
+                    alert("👉 Bạn có thể cài đặt bằng cách bấm biểu tượng 'Cài đặt ứng dụng' (Install app) trên thanh địa chỉ của trình duyệt Chrome hoặc Edge!");
+                }
+            }
+        }
+
+        window.addEventListener('appinstalled', () => {
+            if (installBtn) installBtn.style.display = 'none';
+            deferredInstallPrompt = null;
+        });
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch((err) => {
+                    console.log('SW registration failed:', err);
+                });
+            });
+        }
+    </script>
 </body>
 
 </html>
