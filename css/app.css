@@ -1405,3 +1405,8 @@ body {
         grid-template-columns: repeat(3, 1fr);
     }
 }
+
+@keyframes pulseBanner {
+    0% { transform: scale(1); filter: brightness(1); }
+    100% { transform: scale(1.02); filter: brightness(1.08); }
+}

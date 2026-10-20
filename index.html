@@ -51,6 +51,11 @@
         </div>
     </header>
 
+    <!-- AUDIO UNLOCK PROMPT BANNER -->
+    <div id="audio-starter-banner" onclick="startAudioExperience()" style="background: linear-gradient(90deg, #FF6B6B, #FF8E53); color: white; padding: 12px 16px; text-align: center; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1rem; box-shadow: 0 4px 12px rgba(255, 107, 107, 0.35); animation: pulseBanner 2s infinite alternate;">
+        <span>🔊 Chạm vào đây để BẬT ÂM THANH & GIỌNG NÓI cùng Gấu Trúc! 🐼</span>
+    </div>
+
     <!-- PANDA MASCOT HERO SECTION -->
     <section class="hero-mascot-section">
         <div id="panda-mascot-container"></div>
@@ -138,10 +143,17 @@
             <div class="setting-item">
                 <label>Nguồn Âm Thanh (TTS):</label>
                 <select id="set-tts-engine" class="setting-select" onchange="sunnyApp.updateSettingsEngineUI()">
-                    <option value="edge">Edge Neural AI (Giọng em bé cực chuẩn)</option>
-                    <option value="google">Google Translate (Ổn định)</option>
-                    <option value="system">Giọng hệ thống (Thiết bị offline)</option>
+                    <option value="system">Giọng hệ thống Web Speech (Khuyên dùng - Nhanh & Ổn định nhất)</option>
+                    <option value="edge">Edge Neural AI (Giọng em bé trực tuyến)</option>
+                    <option value="google">Google Translate TTS (Dự phòng)</option>
                 </select>
+            </div>
+
+            <!-- Test Audio Button -->
+            <div class="setting-item">
+                <button type="button" class="btn-header" style="width: 100%; justify-content: center; background: #2ED573; color: white; border-color: #26AF61;" onclick="sunnyApp.testAudioInSettings()">
+                    🔊 Bấm Thử Âm Thanh & Giọng Đọc Ngay
+                </button>
             </div>
 
             <!-- Edge Voices -->

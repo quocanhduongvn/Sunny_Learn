@@ -22,21 +22,32 @@ class SunnyPandaApp {
         this.updateStarDisplays();
         this.bindGlobalControls();
 
-        // Welcome speech on first interaction
-        document.body.addEventListener('click', () => {
+        // Welcome speech & audio unlock on first interaction
+        const triggerWelcome = () => {
             if (!this.welcomed) {
                 this.welcomed = true;
+                const banner = document.getElementById('audio-starter-banner');
+                if (banner) banner.style.display = 'none';
+
                 if (window.pandaAudio) {
-                    window.pandaAudio.initAudioContext();
-                    if (window.pandaAudio.settings.bgmEnabled) {
-                        window.pandaAudio.startBgm();
-                    }
+                    window.pandaAudio.unlockAudio();
                 }
                 if (this.mascot) {
-                    this.mascot.say("Welcome! Let's learn English with Panda! 🎋", "Chào bé yêu! Mình cùng học tiếng Anh với Gấu Trúc nha!", 4000);
+                    this.mascot.say("Welcome! Let's learn English with Panda! 🎋", "Chào bé yêu! Cùng học tiếng Anh với Gấu nha!", 4000);
                 }
             }
-        }, { once: true });
+        };
+
+        window.addEventListener('click', triggerWelcome, { once: true, passive: true });
+        window.addEventListener('touchstart', triggerWelcome, { once: true, passive: true });
+        window.addEventListener('pointerdown', triggerWelcome, { once: true, passive: true });
+
+        window.startAudioExperience = () => {
+            triggerWelcome();
+            if (window.pandaAudio) {
+                window.pandaAudio.speak("Hello baby! Let's play together!", "en");
+            }
+        };
     }
 
     loadStars() {
@@ -238,14 +249,26 @@ class SunnyPandaApp {
 
         // Fill current settings
         const settings = window.pandaAudio.settings;
-        document.getElementById('set-tts-engine').value = settings.ttsEngine;
-        document.getElementById('set-speed').value = settings.speed;
-        document.getElementById('set-speed-val').textContent = settings.speed;
+        document.getElementById('set-tts-engine').value = settings.ttsEngine || 'system';
+        document.getElementById('set-speed').value = settings.speed || 0.9;
+        document.getElementById('set-speed-val').textContent = settings.speed || 0.9;
         document.getElementById('set-edge-en').value = settings.edgeEn;
         document.getElementById('set-edge-vi').value = settings.edgeVi;
 
         this.updateSettingsEngineUI();
         modal.style.display = 'flex';
+    }
+
+    testAudioInSettings() {
+        if (window.pandaAudio) {
+            window.pandaAudio.unlockAudio();
+            window.pandaAudio.playSfx('fanfare');
+            setTimeout(() => {
+                window.pandaAudio.speak("Hello baby! Welcome to Sunny Panda!", "en", () => {
+                    setTimeout(() => window.pandaAudio.speak("Chào bé yêu!", "vi"), 300);
+                });
+            }, 300);
+        }
     }
 
     updateSettingsEngineUI() {
