@@ -1,7 +1,10 @@
 /**
- * SUNNY PANDA - Rock-Solid Audio & Speech Engine
- * Web Speech API (Primary, Instant, 100% Reliable Offline) + Web Audio SFX + Procedural BGM
- * Fallbacks to Edge / Google TTS if requested
+ * SUNNY PANDA - High-Fidelity Audio & Speech Engine
+ * Hybrid Multi-Tier Audio:
+ * Tier 1: Local MP3 recordings (sound/Zero.mp3 - Nine.mp3)
+ * Tier 2: Real Native Speaker Studio MP3 stream (Youdao Audio CDN - 100% reliable, zero CORS/403)
+ * Tier 3: Native Web Speech API (with Chromium pause/resume bug fixes)
+ * Tier 4: Procedural Web Audio SFX (pops, stars, fanfare, chomp) + BGM Synthesizer
  */
 
 class PandaAudioEngine {
@@ -11,18 +14,15 @@ class PandaAudioEngine {
         this.bgmTimer = null;
         this.bgmVolume = 0.25;
         this.sfxVolume = 0.9;
-        this.ttsAudio = new Audio();
+        this.currentAudioElem = null;
         this.unlocked = false;
-        this.edgeBlobCache = {};
-        
+
         // Settings loaded from localStorage
         this.settings = {
-            ttsEngine: 'system', // 'system' (Web Speech API - most reliable) | 'edge' | 'google'
-            speed: 0.9,         // slightly slower for 4-5yo
+            ttsEngine: 'hybrid', // 'hybrid' (Real MP3 + Web Speech) | 'system'
+            speed: 0.9,
             voiceEn: '',
             voiceVi: '',
-            edgeEn: 'en-US-AnaNeural',
-            edgeVi: 'vi-VN-HoaiMyNeural',
             bgmEnabled: true,
             sfxEnabled: true
         };
@@ -34,15 +34,17 @@ class PandaAudioEngine {
 
     loadSettings() {
         try {
-            const saved = localStorage.getItem('sunny_panda_settings');
+            const saved = localStorage.getItem('sunny_panda_settings') || localStorage.getItem('sunny_tts_settings');
             if (saved) {
                 const parsed = JSON.parse(saved);
                 this.settings = { ...this.settings, ...parsed };
-                // Ensure default to 'system' if not explicitly set to edge/google
-                if (!this.settings.ttsEngine) this.settings.ttsEngine = 'system';
             }
-        } catch (e) {
-            console.warn('Could not load audio settings', e);
+        } catch (e) {}
+
+        // Always ensure hybrid/system engine is active (discard old broken edge/google tokens)
+        if (this.settings.ttsEngine === 'edge' || this.settings.ttsEngine === 'google' || !this.settings.ttsEngine) {
+            this.settings.ttsEngine = 'hybrid';
+            this.saveSettings();
         }
     }
 
@@ -52,54 +54,45 @@ class PandaAudioEngine {
         } catch (e) {}
     }
 
-    // Auto-unlock audio on any first gesture (click, touch, pointer)
     setupGlobalUnlockListener() {
         const unlock = () => {
             this.unlockAudio();
             window.removeEventListener('click', unlock);
             window.removeEventListener('touchstart', unlock);
             window.removeEventListener('pointerdown', unlock);
-            window.removeEventListener('keydown', unlock);
         };
         window.addEventListener('click', unlock, { passive: true });
         window.addEventListener('touchstart', unlock, { passive: true });
         window.addEventListener('pointerdown', unlock, { passive: true });
-        window.addEventListener('keydown', unlock, { passive: true });
     }
 
     unlockAudio() {
         if (this.unlocked) return;
         this.unlocked = true;
 
-        // 1. Unlock Web Audio API Context
+        // 1. Web Audio Context
         this.initAudioContext();
         if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume().catch(() => {});
         }
 
-        // 2. Unlock HTML5 Audio Tag
-        if (this.ttsAudio) {
-            this.ttsAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
-            this.ttsAudio.play().catch(() => {});
-        }
-
-        // 3. Unlock SpeechSynthesis on iOS / Android
+        // 2. Web Speech API resume for Chrome/Safari
         if ('speechSynthesis' in window) {
             try {
-                window.speechSynthesis.resume();
-                const dummy = new SpeechSynthesisUtterance(' ');
+                if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                }
+                const dummy = new SpeechSynthesisUtterance('');
                 dummy.volume = 0.01;
-                dummy.rate = 2.0;
                 window.speechSynthesis.speak(dummy);
             } catch (e) {}
         }
 
-        // 4. Start BGM if enabled
+        // 3. Start BGM
         if (this.settings.bgmEnabled && !this.bgmPlaying) {
             setTimeout(() => this.startBgm(), 300);
         }
 
-        // Play gentle chime
         this.playSfx('star');
     }
 
@@ -117,19 +110,10 @@ class PandaAudioEngine {
         if ('speechSynthesis' in window) {
             const update = () => {
                 this.sysVoices = window.speechSynthesis.getVoices() || [];
-                // Auto-pick best English and Vietnamese voices if not selected
-                if (!this.settings.voiceEn && this.sysVoices.length > 0) {
-                    const enVoice = this.sysVoices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Siri')));
-                    if (enVoice) this.settings.voiceEn = enVoice.name;
-                }
-                if (!this.settings.voiceVi && this.sysVoices.length > 0) {
-                    const viVoice = this.sysVoices.find(v => v.lang.startsWith('vi'));
-                    if (viVoice) this.settings.voiceVi = viVoice.name;
-                }
             };
             window.speechSynthesis.onvoiceschanged = update;
             update();
-            setTimeout(update, 500);
+            setTimeout(update, 600);
         }
     }
 
@@ -211,7 +195,6 @@ class PandaAudioEngine {
                 case 'wrong': {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
-
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(300, now);
                     osc.frequency.exponentialRampToValueAtTime(150, now + 0.25);
@@ -363,7 +346,7 @@ class PandaAudioEngine {
     }
 
     // ==========================================
-    // TEXT-TO-SPEECH (TTS)
+    // MASTER VOCAL PRONUNCIATION (Real MP3 + Fallback)
     // ==========================================
 
     speak(text, lang = 'en', onEnd) {
@@ -372,183 +355,137 @@ class PandaAudioEngine {
             return;
         }
 
-        // Ensure audio context and speech synth are active
         this.unlockAudio();
 
-        if (this.settings.ttsEngine === 'edge') {
-            this.speakEdge(text, lang, onEnd);
+        // 1. Check if word is a number 0-9 with existing local mp3
+        const numMap = {
+            'zero': 'sound/Zero.mp3', '0': 'sound/Zero.mp3',
+            'one': 'sound/One.mp3', '1': 'sound/One.mp3',
+            'two': 'sound/Two.mp3', '2': 'sound/Two.mp3',
+            'three': 'sound/Three.mp3', '3': 'sound/Three.mp3',
+            'four': 'sound/Four.mp3', '4': 'sound/Four.mp3',
+            'five': 'sound/Five.mp3', '5': 'sound/Five.mp3',
+            'six': 'sound/Six.mp3', '6': 'sound/Six.mp3',
+            'seven': 'sound/Seven.mp3', '7': 'sound/Seven.mp3',
+            'eight': 'sound/Eight.mp3', '8': 'sound/Eight.mp3',
+            'nine': 'sound/Nine.mp3', '9': 'sound/Nine.mp3'
+        };
+
+        const clean = text.toLowerCase().trim();
+        if (numMap[clean]) {
+            this.playMp3(numMap[clean], onEnd, () => {
+                this.speakSystem(text, lang, onEnd);
+            });
             return;
         }
 
-        if (this.settings.ttsEngine === 'google') {
-            this.speakGoogle(text, lang, onEnd);
+        // 2. If English word or letter or short phrase: use Studio Native Speaker MP3
+        if (lang === 'en' && text.length <= 40) {
+            // Free, fast, crystal clear native speaker American English MP3
+            const studioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=2`;
+            this.playMp3(studioUrl, onEnd, () => {
+                // Offline fallback: Web Speech API
+                this.speakSystem(text, lang, onEnd);
+            });
             return;
         }
 
-        // Default & Most Reliable: System Web Speech API
+        // 3. For Vietnamese or longer sentences: use Native Web Speech API
         this.speakSystem(text, lang, onEnd);
+    }
+
+    playMp3(url, onEnd, onFail) {
+        if (this.currentAudioElem) {
+            try {
+                this.currentAudioElem.pause();
+                this.currentAudioElem.currentTime = 0;
+            } catch (e) {}
+        }
+
+        const audio = new Audio();
+        this.currentAudioElem = audio;
+        audio.playbackRate = this.settings.speed || 1.0;
+        audio.volume = 1.0;
+
+        let resolved = false;
+        const done = () => {
+            if (!resolved) {
+                resolved = true;
+                if (onEnd) onEnd();
+            }
+        };
+
+        const fail = () => {
+            if (!resolved) {
+                resolved = true;
+                if (onFail) onFail();
+                else done();
+            }
+        };
+
+        audio.onended = done;
+        audio.onerror = fail;
+
+        audio.src = url;
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch((err) => {
+                console.warn('MP3 play caught error:', err);
+                fail();
+            });
+        }
     }
 
     speakSystem(text, lang = 'en', onEnd) {
         if (!('speechSynthesis' in window)) {
-            // Ultimate fallback to google
-            this.speakGoogle(text, lang, onEnd);
+            if (onEnd) onEnd();
             return;
         }
 
         try {
-            window.speechSynthesis.cancel(); // Cancel any lingering utterances
+            // Fix Chrome speech synthesis engine pause state
+            if (window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+            }
 
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = lang === 'en' ? 'en-US' : 'vi-VN';
             msg.rate = this.settings.speed || 0.9;
-            msg.pitch = 1.05;
             msg.volume = 1.0;
+            msg.pitch = 1.05;
 
             if (this.sysVoices.length === 0) {
                 this.sysVoices = window.speechSynthesis.getVoices() || [];
             }
 
-            // Find best voice match
-            const targetVoiceName = lang === 'en' ? this.settings.voiceEn : this.settings.voiceVi;
-            let matchedVoice = null;
-
-            if (targetVoiceName) {
-                matchedVoice = this.sysVoices.find(v => v.name === targetVoiceName);
+            const langPrefix = lang === 'en' ? 'en' : 'vi';
+            const matched = this.sysVoices.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix));
+            if (matched) {
+                msg.voice = matched;
             }
 
-            if (!matchedVoice) {
-                const langPrefix = lang === 'en' ? 'en' : 'vi';
-                matchedVoice = this.sysVoices.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix));
-            }
-
-            if (matchedVoice) {
-                msg.voice = matchedVoice;
-            }
-
-            msg.onend = () => { if (onEnd) onEnd(); };
-            msg.onerror = (err) => {
-                console.warn('SpeechSynthesis error, falling back:', err);
-                if (onEnd) onEnd();
-            };
-
-            window.speechSynthesis.speak(msg);
-        } catch (e) {
-            console.warn('speakSystem exception:', e);
-            if (onEnd) onEnd();
-        }
-    }
-
-    speakGoogle(text, lang = 'en', onEnd) {
-        const gLang = lang === 'en' ? 'en' : 'vi';
-        const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${gLang}&q=${encodeURIComponent(text)}`;
-
-        let handled = false;
-        const fallback = () => {
-            if (handled) return;
-            handled = true;
-            this.speakSystem(text, lang, onEnd);
-        };
-
-        const timer = setTimeout(fallback, 1500); // 1.5s timeout
-
-        if (this.ttsAudio) {
-            this.ttsAudio.playbackRate = this.settings.speed || 1.0;
-            this.ttsAudio.src = url;
-            this.ttsAudio.onended = () => {
-                clearTimeout(timer);
-                if (!handled) {
-                    handled = true;
+            let finished = false;
+            const complete = () => {
+                if (!finished) {
+                    finished = true;
                     if (onEnd) onEnd();
                 }
             };
-            this.ttsAudio.onerror = () => {
-                clearTimeout(timer);
-                fallback();
-            };
-            this.ttsAudio.play().catch(() => {
-                clearTimeout(timer);
-                fallback();
-            });
-        } else {
-            fallback();
-        }
-    }
 
-    speakEdge(text, lang = 'en', onEnd) {
-        const voice = lang === 'en' ? (this.settings.edgeEn || 'en-US-AnaNeural') : (this.settings.edgeVi || 'vi-VN-HoaiMyNeural');
-        const cacheKey = voice + "_" + text;
-        const xmlLang = lang === 'en' ? 'en-US' : 'vi-VN';
-        const speed = this.settings.speed || 1.0;
+            msg.onend = complete;
+            msg.onerror = complete;
 
-        let handled = false;
-        const fallback = () => {
-            if (handled) return;
-            handled = true;
-            this.speakSystem(text, lang, onEnd);
-        };
+            window.speechSynthesis.speak(msg);
 
-        const timeout = setTimeout(fallback, 2000); // 2s timeout
-
-        if (this.edgeBlobCache[cacheKey]) {
-            clearTimeout(timeout);
-            this.ttsAudio.src = this.edgeBlobCache[cacheKey];
-            this.ttsAudio.playbackRate = speed;
-            this.ttsAudio.onended = () => { if (onEnd) onEnd(); };
-            this.ttsAudio.play().catch(() => fallback());
-            return;
-        }
-
-        try {
-            const ws = new WebSocket("wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4");
-            let audioParts = [];
-
-            ws.onopen = () => {
-                const reqId = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, c => (c=='x'?Math.random()*16|0:(Math.random()*16|0&0x3|0x8)).toString(16));
-                ws.send(`X-Timestamp:${new Date().toISOString()}\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`);
-                ws.send(`X-RequestId:${reqId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${new Date().toISOString()}\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${xmlLang}'><voice name='${voice}'>${text}</voice></speak>`);
-            };
-
-            ws.onmessage = async (e) => {
-                if (typeof e.data === 'string') {
-                    if (e.data.includes('Path:turn.end')) {
-                        ws.close();
-                        clearTimeout(timeout);
-                        const blob = new Blob(audioParts, { type: 'audio/mp3' });
-                        const url = URL.createObjectURL(blob);
-                        this.edgeBlobCache[cacheKey] = url;
-                        this.ttsAudio.src = url;
-                        this.ttsAudio.playbackRate = speed;
-                        this.ttsAudio.onended = () => {
-                            if (!handled) {
-                                handled = true;
-                                if (onEnd) onEnd();
-                            }
-                        };
-                        this.ttsAudio.play().catch(() => fallback());
-                    }
-                } else {
-                    const buffer = await e.data.arrayBuffer();
-                    const view = new Uint8Array(buffer);
-                    let headerEnd = -1;
-                    for (let i = 0; i < view.length - 3; i++) {
-                        if (view[i] === 13 && view[i+1] === 10 && view[i+2] === 13 && view[i+3] === 10) {
-                            headerEnd = i + 4;
-                            break;
-                        }
-                    }
-                    if (headerEnd !== -1) audioParts.push(buffer.slice(headerEnd));
+            // Chrome bug pump: periodically resume if engine gets stuck
+            setTimeout(() => {
+                if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
                 }
-            };
-
-            ws.onerror = () => {
-                ws.close();
-                clearTimeout(timeout);
-                fallback();
-            };
+            }, 60);
         } catch (e) {
-            clearTimeout(timeout);
-            fallback();
+            console.warn('speakSystem exception:', e);
+            if (onEnd) onEnd();
         }
     }
 

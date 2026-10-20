@@ -264,8 +264,8 @@ class SunnyPandaApp {
             window.pandaAudio.unlockAudio();
             window.pandaAudio.playSfx('fanfare');
             setTimeout(() => {
-                window.pandaAudio.speak("Hello baby! Welcome to Sunny Panda!", "en", () => {
-                    setTimeout(() => window.pandaAudio.speak("Chào bé yêu!", "vi"), 300);
+                window.pandaAudio.speak("Panda", "en", () => {
+                    setTimeout(() => window.pandaAudio.speak("Apple", "en"), 700);
                 });
             }, 300);
         }
