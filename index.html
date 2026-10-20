@@ -4,767 +4,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bé học số - Tương tác từng chữ</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            background-color: #f8f9fa;
-            box-sizing: border-box;
-        }
+    <meta name="theme-color" content="#2ED573">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Sunny Panda 🐼 - Bé Học Tiếng Anh Cùng Gấu Trúc (4-5 Tuổi)</title>
 
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 320px;
-        }
-
-        .control-btn,
-        .lang-select {
-            padding: 10px;
-            font-size: 1rem;
-            border-radius: 10px;
-            border: 2px solid #3498db;
-            background-color: white;
-            cursor: pointer;
-            font-weight: bold;
-            color: #2c3e50;
-            flex: 1;
-            text-align: center;
-            outline: none;
-            font-family: inherit;
-        }
-
-        .control-btn:active {
-            background-color: #f1f2f6;
-        }
-
-        .instruction {
-            color: #95a5a6;
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        /* Khu vực các nút chữ số */
-        .word-container {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 20px;
-            flex-wrap: nowrap;
-            justify-content: center;
-            width: 100%;
-            max-width: 100%;
-        }
-
-        .word-btn {
-            background: white;
-            border: 2px solid #3498db;
-            color: #3498db;
-            padding: 8px 4px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-            flex: 1 1 0;
-            min-width: 0;
-            word-break: break-word;
-            text-align: center;
-        }
-
-        .word-btn:active {
-            transform: scale(0.9);
-            background-color: #3498db;
-            color: white;
-        }
-
-        .word-btn span {
-            font-size: 0.8rem;
-        }
-
-        /* Icon loa nhỏ */
-
-        /* Khu vực hiển thị số đã bấm */
-        .input-slots {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 30px;
-            flex-wrap: nowrap;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .slot {
-            width: 50px;
-            height: 55px;
-            border-bottom: 5px solid #bdc3c7;
-            font-size: 2rem;
-            font-weight: bold;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #2c3e50;
-            flex: 0 1 50px;
-        }
-
-        .correct {
-            color: #2ecc71 !important;
-            border-bottom-color: #2ecc71 !important;
-        }
-
-        .wrong {
-            color: #e74c3c !important;
-            border-bottom-color: #e74c3c !important;
-        }
-
-        /* Bàn phím số */
-        .keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            width: 100%;
-            max-width: 320px;
-        }
-
-        .keypad button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 15px;
-            font-size: 1.5rem;
-            border-radius: 18px;
-            cursor: pointer;
-            box-shadow: 0 5px #2980b9;
-            font-weight: bold;
-        }
-
-        .keypad button:active {
-            box-shadow: 0 0 #2980b9;
-            transform: translateY(4px);
-        }
-
-        .btn-reset {
-            background-color: #f1c40f !important;
-            box-shadow: 0 5px #f39c12 !important;
-        }
-
-        .speak-all-btn {
-            background-color: #2ecc71;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1.1rem;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-bottom: 15px;
-            box-shadow: 0 4px #27ae60;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
-        .speak-all-btn:active {
-            box-shadow: 0 0 #27ae60;
-            transform: translateY(4px);
-        }
-
-        .version-label {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            font-size: 0.8rem;
-            color: #7f8c8d;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 2px 5px;
-            border-radius: 4px;
-            pointer-events: none;
-        }
-
-        @keyframes bounce {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-20px);
-            }
-        }
-
-        /* Modal Settings */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2500;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .modal-content {
-            background: white;
-            color: #2c3e50;
-            padding: 25px;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 350px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            text-align: center;
-        }
-
-        .modal-content select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 10px;
-            border: 2px solid #bdc3c7;
-            outline: none;
-            font-size: 1rem;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            transition: transform 0.2s;
-        }
-
-        .modal-btn:active {
-            transform: scale(0.95);
-        }
-
-        .btn-save {
-            background: #2ecc71;
-        }
-
-        .btn-cancel {
-            background: #e74c3c;
-        }
-
-        .btn-settings {
-            position: fixed;
-            left: 15px;
-            top: 15px;
-            background: #7f8c8d;
-            color: white;
-            border: 2px solid #95a5a6;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-        }
-    </style>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/app.css">
 </head>
 
 <body>
-    <button onclick="showSettingsModal()" class="btn-settings">⚙️ Cài Đặt</button>
 
-    <!-- Modal Cài Đặt TTS -->
-    <div class="modal-overlay" id="settings-modal" style="z-index: 3000;">
-        <div class="modal-content">
-            <h2>⚙️ Cài Đặt Giọng Đọc</h2>
+    <!-- TOP NAVIGATION -->
+    <header class="app-navbar">
+        <div class="brand-badge" onclick="sunnyApp.showHome()">
+            <div class="brand-logo-icon">🐼</div>
+            <div class="brand-text">
+                <h1>Sunny Panda</h1>
+                <span>Tiếng Anh Cho Bé 4-5 Tuổi</span>
+            </div>
+        </div>
 
-            <div style="text-align: left; margin-bottom: 5px; font-weight:bold;">Nguồn âm thanh:</div>
-            <select id="tts-engine" onchange="updateSettingsUI()">
-                <option value="google">Google Translate (Mạng/Ổn định)</option>
-                <option value="system">Giọng máy tính (Nhiều tuỳ chọn/Offline)</option>
-                <option value="edge">Edge Neural TTS (Cao cấp/Mạng)</option>
-            </select>
+        <div class="nav-actions">
+            <!-- Stars Earned -->
+            <div class="star-count-container" onclick="sunnyApp.launchStickerAlbum()" title="Xem bộ sưu tập huy hiệu">
+                <span>⭐</span>
+                <span class="star-count-badge">0</span>
+            </div>
 
-            <div id="system-voice-settings" style="display:none; margin-top:15px;">
-                <div style="text-align: left; margin-bottom: 5px; font-weight:bold;">Giọng Tiếng Anh:</div>
-                <select id="voice-en"></select>
+            <!-- BGM Toggle -->
+            <button class="btn-header" id="btn-bgm-toggle" title="Bật/Tắt nhạc nền vui nhộn">
+                🎵 Nhạc: Bật
+            </button>
 
-                <div style="text-align: left; margin-bottom: 5px; margin-top: 10px; font-weight:bold;">Giọng Tiếng Việt:
+            <!-- Parental Gate -->
+            <button class="btn-header" onclick="sunnyApp.openParentalGate()" title="Cài đặt cho phụ huynh">
+                ⚙️ Ba Mẹ
+            </button>
+        </div>
+    </header>
+
+    <!-- PANDA MASCOT HERO SECTION -->
+    <section class="hero-mascot-section">
+        <div id="panda-mascot-container"></div>
+    </section>
+
+    <!-- MAIN HOME HUB -->
+    <main id="home-area">
+        <!-- Interactive Mini-Games Carousel -->
+        <section class="mini-games-hub">
+            <div class="section-label">🎮 Trò Chơi Vui Nhộn Cùng Gấu Trúc</div>
+            <div class="game-modes-grid">
+                <div class="game-mode-card" onclick="sunnyApp.launchRandomAll()" style="background: #E8F8F5; border-color: #1ABC9C;">
+                    <div class="mode-icon">🎴</div>
+                    <div class="mode-name-vn">Thẻ Kỳ Diệu</div>
+                    <div class="mode-name-en">Flashcards</div>
                 </div>
-                <select id="voice-vi"></select>
+
+                <div class="game-mode-card" onclick="sunnyApp.launchQuiz()" style="background: #FFF9E6; border-color: #F1C40F;">
+                    <div class="mode-icon">🎯</div>
+                    <div class="mode-name-vn">Đố Vui</div>
+                    <div class="mode-name-en">Panda Quiz</div>
+                </div>
+
+                <div class="game-mode-card" onclick="sunnyApp.launchFeedPanda()" style="background: #FDF2E9; border-color: #E67E22;">
+                    <div class="mode-icon">🎋</div>
+                    <div class="mode-name-vn">Cho Gấu Ăn</div>
+                    <div class="mode-name-en">Feed Panda</div>
+                </div>
+
+                <div class="game-mode-card" onclick="sunnyApp.launchBalloon()" style="background: #EBF5FB; border-color: #3498DB;">
+                    <div class="mode-icon">🎈</div>
+                    <div class="mode-name-vn">Bong Bóng</div>
+                    <div class="mode-name-en">Balloon Pop</div>
+                </div>
+
+                <div class="game-mode-card" onclick="sunnyApp.launchMemory()" style="background: #F4ECF7; border-color: #9B59B6;">
+                    <div class="mode-icon">🧩</div>
+                    <div class="mode-name-vn">Tìm Cặp Đôi</div>
+                    <div class="mode-name-en">Memory Match</div>
+                </div>
+
+                <div class="game-mode-card" onclick="sunnyApp.launchSpeak()" style="background: #FADBD8; border-color: #E74C3C;">
+                    <div class="mode-icon">🎤</div>
+                    <div class="mode-name-vn">Bé Tập Nói</div>
+                    <div class="mode-name-en">Speak English</div>
+                </div>
+
+                <div class="game-mode-card" onclick="sunnyApp.launchStickerAlbum()" style="background: #FEF9E7; border-color: #F39C12;">
+                    <div class="mode-icon">🏆</div>
+                    <div class="mode-name-vn">Huy Hiệu</div>
+                    <div class="mode-name-en">Sticker Album</div>
+                </div>
             </div>
+        </section>
 
-            <div id="edge-voice-settings" style="display:none; margin-top:15px;">
-                <div style="text-align: left; margin-bottom: 5px; font-weight:bold;">Giọng Tiếng Anh (Cao cấp):</div>
-                <select id="edge-en">
-                    <option value="en-US-AnaNeural">Ana (Bé Gái - Mỹ)</option>
-                    <option value="en-US-ChristopherNeural">Christopher (Bé Trai - Mỹ)</option>
-                    <option value="en-US-EricNeural">Eric (Trẻ em - Mỹ)</option>
-                    <option value="en-GB-SoniaNeural">Sonia (Nữ - Anh)</option>
-                    <option value="en-GB-RyanNeural">Ryan (Nam - Anh)</option>
-                    <option value="en-US-JennyNeural">Jenny (Nữ chuẩn - Mỹ)</option>
-                    <option value="en-US-GuyNeural">Guy (Nam chuẩn - Mỹ)</option>
-                </select>
+        <!-- Topic Categories Explorer -->
+        <section class="mini-games-hub">
+            <div class="section-label">📚 Chủ Đề Khám Phá Cho Bé</div>
+            <div class="categories-container" id="categories-container"></div>
+        </section>
+    </main>
 
-                <div style="text-align: left; margin-bottom: 5px; margin-top: 10px; font-weight:bold;">Giọng Tiếng Việt
-                    (Cao cấp):</div>
-                <select id="edge-vi">
-                    <option value="vi-VN-HoaiMyNeural">Hoài My (Nữ chuẩn)</option>
-                    <option value="vi-VN-NamMinhNeural">Nam Minh (Nam trầm)</option>
-                </select>
-            </div>
+    <!-- DYNAMIC GAME / FLASHCARD AREA -->
+    <main class="game-area" id="game-area"></main>
 
-            <div style="text-align: left; margin-top: 20px; font-weight:bold;">Tốc độ đọc: <span
-                    id="speed-val">1.0</span>x</div>
-            <input type="range" id="tts-speed" min="0.5" max="2.0" step="0.1" value="1.0"
-                oninput="document.getElementById('speed-val').innerText = this.value"
-                style="width: 100%; height:8px; margin-top:10px; border-radius:5px; appearance: none; background:#ecf0f1; outline:none;">
-
+    <!-- PARENTAL GATE MODAL -->
+    <div class="modal-overlay" id="parental-gate-modal">
+        <div class="modal-box">
+            <h2>Chế Độ Dành Cho Ba Mẹ 👨‍👩‍👧</h2>
+            <p>Vui lòng giải phép tính đơn giản để vào cài đặt:</p>
+            <div class="gate-math" id="gate-question">3 + 4 = ?</div>
+            <input type="number" id="gate-input" class="gate-input-box" placeholder="?">
             <div class="modal-actions">
-                <button class="modal-btn btn-cancel"
-                    onclick="document.getElementById('settings-modal').style.display='none'">Đóng</button>
-                <button class="modal-btn btn-save" onclick="saveSettings()">Lưu & Thử</button>
+                <button class="btn-modal btn-modal-cancel" onclick="sunnyApp.closeParentalGate()">Hủy</button>
+                <button class="btn-modal btn-modal-submit" onclick="sunnyApp.verifyParentalGate()">Xác Nhận</button>
             </div>
         </div>
     </div>
-    <div id="overlay"
-        style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(52, 152, 219, 0.9); z-index:1000; display:flex; align-items:center; justify-content:center; flex-direction:column; color:white;">
-        <h1 style="margin-bottom:20px;">Bé Học Số</h1>
-        <button onclick="startApp()"
-            style="padding: 20px 40px; font-size: 1.5rem; border-radius: 50px; border:none; background:#2ecc71; color:white; font-weight:bold; cursor:pointer; box-shadow: 0 10px #27ae60;">
-            NHẤN ĐỂ BẮT ĐẦU ▶️
-        </button>
+
+    <!-- SETTINGS MODAL -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-box">
+            <h2>⚙️ Cài Đặt Ứng Dụng</h2>
+
+            <div class="setting-item">
+                <label>Nguồn Âm Thanh (TTS):</label>
+                <select id="set-tts-engine" class="setting-select" onchange="sunnyApp.updateSettingsEngineUI()">
+                    <option value="edge">Edge Neural AI (Giọng em bé cực chuẩn)</option>
+                    <option value="google">Google Translate (Ổn định)</option>
+                    <option value="system">Giọng hệ thống (Thiết bị offline)</option>
+                </select>
+            </div>
+
+            <!-- Edge Voices -->
+            <div id="edge-settings-group">
+                <div class="setting-item">
+                    <label>Giọng Tiếng Anh:</label>
+                    <select id="set-edge-en" class="setting-select">
+                        <option value="en-US-AnaNeural">Ana (Bé gái Mỹ - Rất dễ thương)</option>
+                        <option value="en-US-ChristopherNeural">Christopher (Bé trai Mỹ)</option>
+                        <option value="en-US-JennyNeural">Cô Jenny (Nữ chuẩn Mỹ)</option>
+                        <option value="en-GB-SoniaNeural">Cô Sonia (Nữ chuẩn Anh)</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>Giọng Tiếng Việt:</label>
+                    <select id="set-edge-vi" class="setting-select">
+                        <option value="vi-VN-HoaiMyNeural">Hoài My (Nữ chuẩn truyền cảm)</option>
+                        <option value="vi-VN-NamMinhNeural">Nam Minh (Nam ấm áp)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Speed Slider -->
+            <div class="setting-item">
+                <label>Tốc độ đọc giọng: <span id="set-speed-val">0.9</span>x</label>
+                <input type="range" id="set-speed" min="0.6" max="1.2" step="0.05" value="0.9" class="setting-range" oninput="document.getElementById('set-speed-val').textContent = this.value">
+            </div>
+
+            <!-- Reset Stars -->
+            <div class="setting-item" style="margin-top: 15px;">
+                <button type="button" class="btn-header" style="width: 100%; justify-content: center; color: #E74C3C;" onclick="sunnyApp.resetStars()">
+                    🔄 Đặt lại số ngôi sao của bé
+                </button>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="btn-modal btn-modal-cancel" onclick="sunnyApp.closeSettings()">Đóng</button>
+                <button class="btn-modal btn-modal-submit" onclick="sunnyApp.saveSettings()">Lưu Cài Đặt</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Màn hình chúc mừng -->
-    <div id="congrat-overlay"
-        style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0, 0, 0, 0.85); z-index:2000; align-items:center; justify-content:center; flex-direction:column; color:white;">
-        <div style="font-size: 100px; margin-bottom: 20px; animation: bounce 1s infinite;">🎉🏅🎉</div>
-        <h1 id="congrat-msg"
-            style="color: #f1c40f; text-shadow: 0 0 10px #f39c12; font-size: 2.5rem; text-align: center;">Chúc mừng bé!
-        </h1>
-        <button onclick="nextLesson()"
-            style="margin-top: 30px; padding: 15px 35px; font-size: 1.5rem; border-radius: 25px; border:none; background:#e74c3c; color:white; font-weight:bold; cursor:pointer; box-shadow: 0 8px #c0392b;">
-            Chơi tiếp ▶️
-        </button>
-    </div>
-
-    <!-- Nút chuyển sang trang FlashCard -->
-    <div style="width: 100%; max-width: 320px; display: flex; justify-content: flex-end; margin-bottom: 15px;">
-        <a href="flashCard.html"
-            style="background: #9b59b6; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; box-shadow: 0 4px #8e44ad; font-size: 1.1rem; display: flex; align-items: center; gap: 5px;">
-            🐯 Thẻ Từ Vựng ▶️
-        </a>
-    </div>
-
-    <div class="controls">
-        <button onclick="generateRandomLesson()" class="control-btn">🎲 Random Số</button>
-        <select id="lang-select" onchange="changeLanguage()" class="lang-select">
-            <option value="en">English</option>
-            <option value="vi">Tiếng Việt</option>
-        </select>
-    </div>
-
-    <div class="instruction">NHẤN VÀO CHỮ ĐỂ NGHE:</div>
-
-
-    <button onclick="speakAllNumbers()" class="speak-all-btn">🔊 ĐỌC CẢ 4 SỐ</button>
-
-    <div class="word-container" id="word-container">
-        <!-- Will be generated by JS -->
-    </div>
-
-    <div class="input-slots" id="input-slots">
-        <!-- Will be generated by JS -->
-    </div>
-
-    <div class="keypad">
-        <button onclick="press(1)">1</button>
-        <button onclick="press(2)">2</button>
-        <button onclick="press(3)">3</button>
-        <button onclick="press(4)">4</button>
-        <button onclick="press(5)">5</button>
-        <button onclick="press(6)">6</button>
-        <button onclick="press(7)">7</button>
-        <button onclick="press(8)">8</button>
-        <button onclick="press(9)">9</button>
-        <div style="visibility: hidden;"></div>
-        <button onclick="press(0)">0</button>
-        <button class="btn-reset" onclick="reset()">✕</button>
-        <audio id="ttsAudio"></audio>
-
-        <script>
-            const numWords = {
-                'en': ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'],
-                'vi': ['Không', 'Một', 'Hai', 'Ba', 'Bốn', 'Năm', 'Sáu', 'Bảy', 'Tám', 'Chín']
-            };
-
-            let currentLanguage = 'en';
-            let targetNumbers = [];
-            let currentIndex = 0;
-            let ttsAudio;
-            const soundMap = {
-                0: 'sound/Zero.mp3',
-                1: 'sound/One.mp3',
-                2: 'sound/Two.mp3',
-                3: 'sound/Three.mp3',
-                4: 'sound/Four.mp3',
-                5: 'sound/Five.mp3',
-                6: 'sound/Six.mp3',
-                7: 'sound/Seven.mp3',
-                8: 'sound/Eight.mp3',
-                9: 'sound/Nine.mp3'
-            };
-            const speechSupported = 'speechSynthesis' in window;
-
-            // -- SETTINGS LOGIC --
-            let sysVoices = [];
-            let ttsSettings = {
-                engine: 'google',
-                speed: 1.0,
-                voiceEn: '',
-                voiceVi: '',
-                edgeEn: 'en-US-AnaNeural',
-                edgeVi: 'vi-VN-HoaiMyNeural'
-            };
-
-            try {
-                const savedSettings = localStorage.getItem('sunny_tts_settings');
-                if (savedSettings) ttsSettings = JSON.parse(savedSettings);
-            } catch (e) { }
-
-            function populateVoices() {
-                sysVoices = window.speechSynthesis.getVoices();
-                const enSelect = document.getElementById('voice-en');
-                const viSelect = document.getElementById('voice-vi');
-
-                enSelect.innerHTML = '<option value="">-- Mặc định --</option>';
-                viSelect.innerHTML = '<option value="">-- Mặc định --</option>';
-
-                sysVoices.forEach(voice => {
-                    const opt = `<option value="${voice.name}">${voice.name} (${voice.lang || 'Khác'})</option>`;
-                    enSelect.innerHTML += opt;
-                    viSelect.innerHTML += opt;
-                });
-
-                enSelect.value = ttsSettings.voiceEn || '';
-                viSelect.value = ttsSettings.voiceVi || '';
-            }
-
-            if ('speechSynthesis' in window) {
-                speechSynthesis.onvoiceschanged = populateVoices;
-            }
-
-            function showSettingsModal() {
-                document.getElementById('tts-engine').value = ttsSettings.engine;
-                document.getElementById('tts-speed').value = ttsSettings.speed;
-                document.getElementById('speed-val').innerText = ttsSettings.speed;
-                document.getElementById('edge-en').value = ttsSettings.edgeEn || 'en-US-AnaNeural';
-                document.getElementById('edge-vi').value = ttsSettings.edgeVi || 'vi-VN-HoaiMyNeural';
-
-                if (sysVoices.length === 0) populateVoices();
-
-                updateSettingsUI();
-                document.getElementById('settings-modal').style.display = 'flex';
-            }
-
-            function updateSettingsUI() {
-                const engine = document.getElementById('tts-engine').value;
-                document.getElementById('system-voice-settings').style.display = engine === 'system' ? 'block' : 'none';
-                document.getElementById('edge-voice-settings').style.display = engine === 'edge' ? 'block' : 'none';
-            }
-
-            function saveSettings() {
-                ttsSettings.engine = document.getElementById('tts-engine').value;
-                ttsSettings.speed = parseFloat(document.getElementById('tts-speed').value);
-                ttsSettings.voiceEn = document.getElementById('voice-en').value;
-                ttsSettings.voiceVi = document.getElementById('voice-vi').value;
-                ttsSettings.edgeEn = document.getElementById('edge-en').value;
-                ttsSettings.edgeVi = document.getElementById('edge-vi').value;
-
-                localStorage.setItem('sunny_tts_settings', JSON.stringify(ttsSettings));
-                document.getElementById('settings-modal').style.display = 'none';
-
-                speakText(currentLanguage === 'vi' ? 'Đã lưu cấu hình' : 'Settings saved');
-            }
-            // --------------------
-
-            const edgeBlobCache = {};
-            function playEdgeTTS(text, lang, speed) {
-                const voice = lang === 'en' ? (ttsSettings.edgeEn || 'en-US-AnaNeural') : (ttsSettings.edgeVi || 'vi-VN-HoaiMyNeural');
-                const cacheKey = voice + "_" + text;
-                const xmlLang = lang === 'en' ? 'en-US' : 'vi-VN';
-                const fallbackLang = lang === 'en' ? 'en-US' : 'vi-VN';
-
-                if (edgeBlobCache[cacheKey]) {
-                    ttsAudio.src = edgeBlobCache[cacheKey];
-                    ttsAudio.oncanplaythrough = () => {
-                        ttsAudio.playbackRate = speed;
-                        ttsAudio.play().catch(e => { });
-                        ttsAudio.oncanplaythrough = null;
-                    };
-                    return;
-                }
-
-                const ws = new WebSocket("wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4");
-                let audioParts = [];
-
-                ws.onopen = () => {
-                    const reqId = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, c => (c == 'x' ? Math.random() * 16 | 0 : (Math.random() * 16 | 0 & 0x3 | 0x8)).toString(16));
-                    ws.send(`X-Timestamp:${new Date().toISOString()}\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`);
-                    ws.send(`X-RequestId:${reqId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${new Date().toISOString()}\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${xmlLang}'><voice name='${voice}'>${text}</voice></speak>`);
-                };
-
-                ws.onmessage = async (e) => {
-                    if (typeof e.data === 'string') {
-                        if (e.data.includes('Path:turn.end')) {
-                            ws.close();
-                            const blob = new Blob(audioParts, { type: 'audio/mp3' });
-                            const url = URL.createObjectURL(blob);
-                            edgeBlobCache[cacheKey] = url;
-                            ttsAudio.src = url;
-                            ttsAudio.oncanplaythrough = () => {
-                                ttsAudio.playbackRate = speed;
-                                ttsAudio.play().catch(err => fallbackSpeakText(text, fallbackLang));
-                                ttsAudio.oncanplaythrough = null;
-                            };
-                        }
-                    } else {
-                        const buffer = await e.data.arrayBuffer();
-                        const view = new Uint8Array(buffer);
-                        let headerEnd = -1;
-                        for (let i = 0; i < view.length - 3; i++) {
-                            if (view[i] === 13 && view[i + 1] === 10 && view[i + 2] === 13 && view[i + 3] === 10) {
-                                headerEnd = i + 4;
-                                break;
-                            }
-                        }
-                        if (headerEnd !== -1) audioParts.push(buffer.slice(headerEnd));
-                    }
-                };
-                ws.onerror = () => {
-                    ws.close();
-                    fallbackSpeakText(text, fallbackLang);
-                };
-            }
-
-            function fallbackSpeakText(text, langCode) {
-                if ('speechSynthesis' in window) {
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = langCode;
-
-                    if (ttsSettings.engine === 'system') {
-                        utterance.rate = ttsSettings.speed;
-                        const targetVoiceName = langCode.startsWith("en") ? ttsSettings.voiceEn : ttsSettings.voiceVi;
-                        if (targetVoiceName && sysVoices.length > 0) {
-                            const matchedVoice = sysVoices.find(v => v.name === targetVoiceName);
-                            if (matchedVoice) utterance.voice = matchedVoice;
-                        }
-                    } else {
-                        utterance.rate = 1.0;
-                    }
-
-                    utterance.pitch = 1.0;
-                    window.speechSynthesis.cancel();
-                    window.speechSynthesis.speak(utterance);
-                }
-            }
-
-            function speakText(text) {
-                if (!ttsAudio) ttsAudio = document.getElementById('ttsAudio');
-
-                if (ttsAudio) ttsAudio.playbackRate = ttsSettings.speed;
-
-                const lang = document.getElementById('lang-select').value;
-                const gLang = lang === 'en' ? 'en' : 'vi'; // Google TTS code
-                const fallbackLang = lang === 'en' ? 'en-US' : 'vi-VN'; // Web Speech API code
-
-                if (ttsSettings.engine === 'system') {
-                    fallbackSpeakText(text, fallbackLang);
-                    return;
-                }
-
-                if (ttsSettings.engine === 'edge') {
-                    playEdgeTTS(text, lang, ttsSettings.speed);
-                    return;
-                }
-
-                if (ttsAudio) {
-                    const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${gLang}&q=${encodeURIComponent(text)}`;
-                    ttsAudio.src = url;
-                    ttsAudio.play().catch(e => {
-                        console.log("Audio play failed, using fallback:", e);
-                        fallbackSpeakText(text, fallbackLang);
-                    });
-                } else {
-                    fallbackSpeakText(text, fallbackLang);
-                }
-            }
-
-            function playAudioForNumber(num) {
-                const audioSrc = soundMap[num];
-                // Ưu tiên file MP3 chỉ khi dùng Google engine + Tiếng Anh
-                if (ttsSettings.engine === 'google' && currentLanguage === 'en' && audioSrc && ttsAudio) {
-                    ttsAudio.src = audioSrc;
-                    ttsAudio.play().catch(err => {
-                        console.error('Audio file play error:', err);
-                        speakText(numWords[currentLanguage][num]);
-                    });
-                    return;
-                }
-                // Các trường hợp khác (Edge, System, hoặc Tiếng Việt) dùng TTS
-                speakText(numWords[currentLanguage][num]);
-            }
-
-            function speakNum(num) {
-                playAudioForNumber(num);
-            }
-
-            function speakAllNumbers() {
-                const textToSpeak = targetNumbers.map(num => numWords[currentLanguage][num]).join(' ');
-
-                // Chế độ đọc từng số bằng MP3 chỉ áp dụng cho Google + English
-                if (ttsSettings.engine === 'google' && currentLanguage === 'en') {
-                    const sequence = targetNumbers.filter(num => soundMap[num]);
-                    if (sequence.length > 0) {
-                        let index = 0;
-                        ttsAudio.onended = () => {
-                            index += 1;
-                            if (index < sequence.length) {
-                                ttsAudio.src = soundMap[sequence[index]];
-                                ttsAudio.play().catch(err => speakText(textToSpeak));
-                            } else {
-                                ttsAudio.onended = null;
-                            }
-                        };
-                        ttsAudio.src = soundMap[sequence[index]];
-                        ttsAudio.play().catch(err => speakText(textToSpeak));
-                        return;
-                    }
-                }
-
-                // Còn lại dùng TTS đọc nguyên câu
-                speakText(textToSpeak);
-            }
-
-            // Hàm khởi tạo sau khi bé nhấn nút Bắt đầu
-            function startApp() {
-                document.getElementById('overlay').style.display = 'none'; // Ẩn màn hình chờ
-
-                ttsAudio = document.getElementById('ttsAudio');
-                if (ttsAudio) {
-                    ttsAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
-                    ttsAudio.play().catch(e => {
-                        console.warn("Silent unlock failed:", e);
-                    });
-                }
-
-                setTimeout(() => {
-                    speakText(currentLanguage === 'vi' ? 'Chào bé' : 'Hello');
-                }, 300);
-
-                generateRandomLesson();
-            }
-
-            function changeLanguage() {
-                currentLanguage = document.getElementById('lang-select').value;
-                renderWords();
-            }
-
-            function renderWords() {
-                const wordContainer = document.getElementById('word-container');
-                wordContainer.innerHTML = targetNumbers.map(num => {
-                    const word = numWords[currentLanguage][num];
-                    return `<button class="word-btn" onclick="speakNum(${num})">${word.toUpperCase()} <span>🔊</span></button>`;
-                }).join('');
-            }
-
-            function generateRandomLesson() {
-                targetNumbers = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10));
-                currentIndex = 0;
-                renderWords();
-
-                const inputSlots = document.getElementById('input-slots');
-                inputSlots.innerHTML = targetNumbers.map((_, i) => `<div class="slot" id="slot-${i}"></div>`).join('');
-            }
-
-            function press(num) {
-                if (currentIndex >= targetNumbers.length) return;
-                const currentSlot = document.getElementById(`slot-${currentIndex}`);
-                currentSlot.innerText = num;
-
-                if (num === targetNumbers[currentIndex]) {
-                    currentSlot.classList.add('correct');
-                    speakNum(num);
-                } else {
-                    currentSlot.classList.add('wrong');
-                }
-                currentIndex++;
-
-                if (currentIndex === targetNumbers.length) {
-                    checkWinCondition();
-                }
-            }
-
-            function checkWinCondition() {
-                let allCorrect = true;
-                for (let i = 0; i < targetNumbers.length; i++) {
-                    const slot = document.getElementById(`slot-${i}`);
-                    if (!slot.classList.contains('correct')) {
-                        allCorrect = false;
-                        break;
-                    }
-                }
-
-                if (allCorrect) {
-                    setTimeout(() => {
-                        const overlay = document.getElementById('congrat-overlay');
-                        const msg = document.getElementById('congrat-msg');
-                        msg.innerText = currentLanguage === 'vi' ? 'Tuyệt vời!' : 'Excellent!';
-                        overlay.style.display = 'flex';
-                        speakText(currentLanguage === 'vi' ? 'Chúc mừng bé!' : 'Congratulations!');
-                    }, 800);
-                }
-            }
-
-            function nextLesson() {
-                document.getElementById('congrat-overlay').style.display = 'none';
-                generateRandomLesson();
-            }
-
-            function reset() {
-                if (currentIndex > 0) {
-                    currentIndex--;
-                    const slot = document.getElementById(`slot-${currentIndex}`);
-                    slot.innerText = "";
-                    slot.classList.remove('correct', 'wrong');
-                }
-            }
-        </script>
-
-        <div class="version-label" id="debug-version">V26.004 (change voice)</div>
+    <!-- SCRIPTS -->
+    <script src="js/data.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/mascot.js"></script>
+    <script src="js/games.js"></script>
+    <script src="js/app.js"></script>
 </body>
 
 </html>

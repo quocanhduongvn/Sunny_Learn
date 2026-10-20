@@ -4,910 +4,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bé Học Tiếng Anh - Chọn Chủ Đề</title>
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
-
+    <title>Thẻ Flashcard Song Ngữ Cho Bé 🐼 - Sunny Panda</title>
+    <link rel="stylesheet" href="css/app.css">
     <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1e272e;
-            color: white;
-            overflow: hidden;
+        .fc-page-container {
+            max-width: 650px;
+            margin: 20px auto 40px auto;
+            padding: 0 15px;
         }
 
-        /* Nút nổi */
-        .btn-float {
-            position: fixed;
-            top: 15px;
-            padding: 10px 20px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.9rem;
-            z-index: 1000;
-            cursor: pointer;
-            border: none;
+        .theme-selector-chips {
             display: flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s;
-        }
-
-        .btn-float:active {
-            transform: scale(0.95);
-        }
-
-        .btn-home {
-            left: 15px;
-            background: #3498db;
-            color: white;
-            border: 2px solid #2980b9;
-        }
-
-        .btn-settings {
-            right: 15px;
-            background: #7f8c8d;
-            color: white;
-            border: 2px solid #95a5a6;
-            z-index: 1000;
-        }
-
-        .btn-back-themes {
-            right: 15px;
-            top: 65px;
-            background: #f1c40f;
-            color: #2c3e50;
-            border: 2px solid #f39c12;
-            display: none;
-        }
-
-        /* Màn hình chọn chủ đề */
-        #theme-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-            background: #1e272e;
-            z-index: 500;
-            position: absolute;
-            width: 100%;
-            top: 0;
-            left: 0;
-            padding: 20px;
-            padding-top: 70px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
-
-        #theme-screen h1 {
-            font-size: 2rem;
-            color: #f1c40f;
-            margin-bottom: 25px;
-            margin-top: 10px;
-            text-align: center;
-            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .theme-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            width: 100%;
-            max-width: 450px;
-            padding-bottom: 30px;
-        }
-
-        .theme-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px 10px;
-            background: white;
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: 800;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .theme-btn:active {
-            transform: scale(0.95);
-        }
-
-        .theme-btn span {
-            font-size: 2.8rem;
-            margin-bottom: 10px;
-        }
-
-        .btn-wide {
-            grid-column: span 2;
-            flex-direction: row;
-            gap: 15px;
-            padding: 15px;
-        }
-
-        .btn-wide span {
-            margin-bottom: 0px;
-            font-size: 2.5rem;
-        }
-
-        /* Modal Thêm Từ Mới */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .modal-content {
-            background: white;
-            color: #2c3e50;
-            padding: 25px;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 350px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            text-align: center;
-        }
-
-        .modal-content h2 {
-            margin-top: 0;
-            color: #8e44ad;
-            font-size: 1.8rem;
-        }
-
-        .modal-content input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #bdc3c7;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .modal-content input:focus {
-            border-color: #3498db;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            transition: transform 0.2s;
-        }
-
-        .modal-btn:active {
-            transform: scale(0.95);
-        }
-
-        .btn-save {
-            background: #2ecc71;
-        }
-
-        .btn-cancel {
-            background: #e74c3c;
-        }
-
-        /* Màn hình Swiper */
-        .swiper {
-            height: 100vh;
-            display: none;
-            background: #000;
-        }
-
-        .swiper-slide {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        /* Thẻ học */
-        .card-img {
-            width: 300px;
-            height: 300px;
-            border-radius: 30px;
-            object-fit: cover;
-            border: 6px solid white;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-            background: white;
-        }
-
-        .card-en {
-            font-size: 45px;
-            margin: 5px 0;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: #f1c40f;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
-            text-transform: capitalize;
-        }
-
-        .card-vn {
-            font-size: 28px;
-            opacity: 0.9;
-            margin-bottom: 25px;
-            color: #ecf0f1;
-            font-weight: bold;
-        }
-
-        /* Nút phát âm */
-        .speak-buttons {
-            display: flex;
-            gap: 15px;
-        }
-
-        .btn-speak {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 30px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
             gap: 8px;
-            transition: transform 0.2s;
+            overflow-x: auto;
+            padding: 10px 0;
+            scrollbar-width: none;
         }
 
-        .btn-speak:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-en {
-            background: #2ed573;
-            color: white;
-        }
-
-        .btn-vn {
-            background: #ff4757;
-            color: white;
-        }
-
-        /* Hướng dẫn vuốt */
-        .swipe-guide {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.7);
-            pointer-events: none;
-            z-index: 10;
-            animation: bounce 1.5s infinite;
+        .theme-selector-chips::-webkit-scrollbar {
             display: none;
-            font-weight: bold;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px 20px;
-            border-radius: 20px;
-            white-space: nowrap;
         }
 
-        @keyframes bounce {
+        .theme-chip {
+            padding: 8px 16px;
+            background: white;
+            border-radius: 20px;
+            border: 2px solid #CBD5E1;
+            font-size: 0.95rem;
+            font-weight: 800;
+            white-space: nowrap;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #CBD5E1;
+            transition: all 0.15s ease;
+        }
 
-            0%,
-            100% {
-                transform: translate(-50%, 0);
-            }
-
-            50% {
-                transform: translate(-50%, -15px);
-            }
+        .theme-chip.active {
+            background: #2ED573;
+            color: white;
+            border-color: #26AF61;
+            box-shadow: 0 3px 0 #26AF61;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Nút điều hướng chung -->
-    <a href="index.html" class="btn-float btn-home">◀️ Bé Học Số</a>
-    <button onclick="showSettingsModal()" class="btn-float btn-settings">⚙️ Cài Đặt</button>
-    <button onclick="showThemes()" class="btn-float btn-back-themes" id="btn-back">🗂️ Đổi Chủ Đề</button>
-
-    <!-- Modal Cài Đặt TTS -->
-    <div class="modal-overlay" id="settings-modal" style="z-index: 2500;">
-        <div class="modal-content">
-            <h2>⚙️ Cài Đặt Giọng Đọc</h2>
-
-            <div style="text-align: left; margin-bottom: 5px; font-weight:bold;">Nguồn âm thanh:</div>
-            <select id="tts-engine" onchange="updateSettingsUI()"
-                style="width:100%; padding:10px; border-radius:10px; border:2px solid #bdc3c7; font-size:1rem; outline:none;">
-                <option value="google">Google Translate (Mạng/Ổn định)</option>
-                <option value="system">Giọng máy tính (Nhiều tuỳ chọn/Offline)</option>
-                <option value="edge">Edge Neural TTS (Cao cấp/Mạng)</option>
-            </select>
-
-            <div id="system-voice-settings" style="display:none; margin-top:15px;">
-                <div style="text-align: left; margin-bottom: 5px; font-weight:bold;">Giọng Tiếng Anh:</div>
-                <select id="voice-en"
-                    style="width:100%; padding:10px; border-radius:10px; border:2px solid #bdc3c7; outline:none; max-width: 100%;"></select>
-
-                <div style="text-align: left; margin-bottom: 5px; margin-top: 10px; font-weight:bold;">Giọng Tiếng Việt:
-                </div>
-                <select id="voice-vi"
-                    style="width:100%; padding:10px; border-radius:10px; border:2px solid #bdc3c7; outline:none; max-width: 100%;"></select>
+    <header class="app-navbar">
+        <a href="index.html" class="brand-badge" style="text-decoration:none;">
+            <div class="brand-logo-icon">🐼</div>
+            <div class="brand-text">
+                <h1>Thẻ Học Song Ngữ</h1>
+                <span>Flashcards Thông Minh</span>
             </div>
+        </a>
 
-            <div id="edge-voice-settings" style="display:none; margin-top:15px;">
-                <div style="text-align: left; margin-bottom: 5px; font-weight:bold;">Giọng Tiếng Anh (Cao cấp):</div>
-                <select id="edge-en" style="width:100%; padding:10px; border-radius:10px; border:2px solid #bdc3c7; outline:none; max-width: 100%;">
-                    <option value="en-US-AnaNeural">Ana (Bé Gái - Mỹ)</option>
-                    <option value="en-US-ChristopherNeural">Christopher (Bé Trai - Mỹ)</option>
-                    <option value="en-US-EricNeural">Eric (Trẻ em - Mỹ)</option>
-                    <option value="en-GB-SoniaNeural">Sonia (Nữ - Anh)</option>
-                    <option value="en-GB-RyanNeural">Ryan (Nam - Anh)</option>
-                    <option value="en-US-JennyNeural">Jenny (Nữ chuẩn - Mỹ)</option>
-                    <option value="en-US-GuyNeural">Guy (Nam chuẩn - Mỹ)</option>
-                </select>
-                
-                <div style="text-align: left; margin-bottom: 5px; margin-top: 10px; font-weight:bold;">Giọng Tiếng Việt (Cao cấp):</div>
-                <select id="edge-vi" style="width:100%; padding:10px; border-radius:10px; border:2px solid #bdc3c7; outline:none; max-width: 100%;">
-                    <option value="vi-VN-HoaiMyNeural">Hoài My (Nữ chuẩn)</option>
-                    <option value="vi-VN-NamMinhNeural">Nam Minh (Nam trầm)</option>
-                </select>
-            </div>
-
-            <div style="text-align: left; margin-top: 20px; font-weight:bold;">Tốc độ đọc: <span
-                    id="speed-val">1.0</span>x</div>
-            <input type="range" id="tts-speed" min="0.5" max="2.0" step="0.1" value="1.0"
-                oninput="document.getElementById('speed-val').innerText = this.value"
-                style="width: 100%; height:8px; margin-top:10px; border-radius:5px; appearance: none; background:#ecf0f1; outline:none;">
-
-            <div class="modal-actions" style="margin-top: 25px;">
-                <button class="modal-btn btn-cancel"
-                    onclick="document.getElementById('settings-modal').style.display='none'">Đóng</button>
-                <button class="modal-btn btn-save" onclick="saveSettings()">Lưu & Thử</button>
-            </div>
+        <div class="nav-actions">
+            <a href="index.html" class="btn-header" style="text-decoration:none;">
+                🏠 Về Trang Chủ
+            </a>
         </div>
+    </header>
+
+    <div class="fc-page-container">
+        <!-- Topic Filter Chips -->
+        <div class="theme-selector-chips" id="theme-chips"></div>
+
+        <!-- Flashcard Area -->
+        <div class="game-area" id="game-area" style="display:block;"></div>
     </div>
 
-    <!-- Modal Thêm Từ Mới -->
-    <div class="modal-overlay" id="add-word-modal">
-        <div class="modal-content">
-            <h2>✨ Thêm Từ Mới</h2>
-            <input type="text" id="new-en" placeholder="Từ Tiếng Anh" autocomplete="off">
-            <input type="text" id="new-vn" placeholder="Nghĩa Tiếng Việt" autocomplete="off">
-            <div class="modal-actions">
-                <button class="modal-btn btn-cancel" onclick="hideAddWordModal()">Hủy</button>
-                <button class="modal-btn btn-save" onclick="saveNewWord()">Lưu Lại</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Màn hình chọn chủ đề -->
-    <div id="theme-screen">
-        <h1>BÉ CHỌN CHỦ ĐỀ NÀO?</h1>
-        <div class="theme-grid">
-            <button class="theme-btn btn-wide" style="color: #16a085; background: #e8f8f5;"
-                onclick="loadRandomAll()"><span>🎲</span> Trộn Tất Cả</button>
-
-            <button class="theme-btn" style="color: #8e44ad;" onclick="loadTheme('alphabet')"><span>🔤</span> Chữ
-                Cái</button>
-            <button class="theme-btn" style="color: #f39c12;" onclick="loadTheme('numbers')"><span>🔢</span> Chữ
-                Số</button>
-            <button class="theme-btn" style="color: #e67e22;" onclick="loadTheme('animals')"><span>🐶</span> Động
-                Vật</button>
-            <button class="theme-btn" style="color: #e74c3c;" onclick="loadTheme('fruits')"><span>🍎</span> Trái
-                Cây</button>
-            <button class="theme-btn" style="color: #3498db;" onclick="loadTheme('vehicles')"><span>🚗</span> Xe
-                Cộ</button>
-            <button class="theme-btn" style="color: #9b59b6;" onclick="loadTheme('colors')"><span>🌈</span> Màu
-                Sắc</button>
-
-            <button class="theme-btn" style="color: #d35400;" onclick="handleCustomTheme()"><span>⭐</span> Từ Của
-                Bé</button>
-            <button class="theme-btn" style="color: #27ae60; border: 2px dashed #2ecc71;"
-                onclick="showAddWordModal()"><span>➕</span> Thêm Mới</button>
-        </div>
-    </div>
-
-    <!-- Tự động phát âm thanh -->
-    <audio id="ttsAudio"></audio>
-
-    <!-- Swiper chứa thẻ bài -->
-    <div class="swiper" id="main-swiper">
-        <div class="swiper-wrapper" id="slides"></div>
-        <div class="swipe-guide" id="swipe-guide">↕️ Vuốt dọc để xem ảnh khác</div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
-
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/mascot.js"></script>
+    <script src="js/games.js"></script>
+    <script src="js/app.js"></script>
     <script>
-        const database = {
-            animals: [
-                { vn: "Con Mèo", en: "cat", img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&q=80" },
-                { vn: "Con Chó", en: "dog", img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&q=80" },
-                { vn: "Con Voi", en: "elephant", img: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=600&q=80" },
-                { vn: "Con Sư Tử", en: "lion", img: "https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?w=600&q=80" },
-                { vn: "Con Khỉ", en: "monkey", img: "https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=600&q=80" },
-                { vn: "Con Lợn", en: "pig", img: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=600&q=80" },
-                { vn: "Con Chim", en: "bird", img: "https://images.unsplash.com/photo-1552728089-571ebd13bb32?w=600&q=80" },
-                { vn: "Con Cá", en: "fish", img: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be1?w=600&q=80" }
-            ],
-            fruits: [
-                { vn: "Quả Táo", en: "apple", img: "https://images.unsplash.com/photo-1560806887-1e4cd0b6caa6?w=600&q=80" },
-                { vn: "Quả Chuối", en: "banana", img: "https://images.unsplash.com/photo-1528825871115-3581a5387919?w=600&q=80" },
-                { vn: "Quả Cam", en: "orange", img: "https://images.unsplash.com/photo-1547514701-427221017958?w=600&q=80" },
-                { vn: "Quả Nho", en: "grape", img: "https://images.unsplash.com/photo-1596363505729-41f7a4768820?w=600&q=80" },
-                { vn: "Dưa Hấu", en: "watermelon", img: "https://images.unsplash.com/photo-1589984662646-e7b2e4962f18?w=600&q=80" },
-                { vn: "Quả Dâu Tây", en: "strawberry", img: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=600&q=80" },
-                { vn: "Quả Xoài", en: "mango", img: "https://images.unsplash.com/photo-1553279768-865429fa0078?w=600&q=80" }
-            ],
-            vehicles: [
-                { vn: "Ô Tô", en: "car", img: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=80" },
-                { vn: "Xe Đạp", en: "bicycle", img: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&q=80" },
-                { vn: "Máy Bay", en: "airplane", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80" },
-                { vn: "Tàu Hỏa", en: "train", img: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=600&q=80" },
-                { vn: "Xe Buýt", en: "bus", img: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&q=80" },
-                { vn: "Tàu Thủy", en: "boat", img: "https://images.unsplash.com/photo-1561021463-b82755e1c8ce?w=600&q=80" },
-                { vn: "Xe Máy", en: "motorcycle", img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&q=80" }
-            ],
-            colors: [
-                { vn: "Màu Đỏ", en: "red", img: "https://placehold.co/600x600/e74c3c/e74c3c.png" },
-                { vn: "Màu Xanh Dương", en: "blue", img: "https://placehold.co/600x600/3498db/3498db.png" },
-                { vn: "Màu Xanh Lá", en: "green", img: "https://placehold.co/600x600/2ecc71/2ecc71.png" },
-                { vn: "Màu Vàng", en: "yellow", img: "https://placehold.co/600x600/f1c40f/f1c40f.png" },
-                { vn: "Màu Cam", en: "orange", img: "https://placehold.co/600x600/e67e22/e67e22.png" },
-                { vn: "Màu Tím", en: "purple", img: "https://placehold.co/600x600/9b59b6/9b59b6.png" },
-                { vn: "Màu Đen", en: "black", img: "https://placehold.co/600x600/2c3e50/2c3e50.png" },
-                { vn: "Màu Trắng", en: "white", img: "https://placehold.co/600x600/ffffff/ffffff.png" },
-                { vn: "Màu Nâu", en: "brown", img: "https://placehold.co/600x600/8B4513/8B4513.png" }
-            ]
-        };
-
-        // Bảng chữ cái
-        database.alphabet = [];
-        const engLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        for (let i = 0; i < engLetters.length; i++) {
-            const letter = engLetters[i];
-            database.alphabet.push({
-                vn: "Chữ cái: " + letter,
-                en: letter,
-                img: `https://placehold.co/600x600/8e44ad/ffffff.png?text=${letter}`
-            });
-        }
-
-        // Chữ số
-        database.numbers = [];
-        const numWordsEn = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty', 'Twenty-One', 'Twenty-Two', 'Twenty-Three', 'Twenty-Four', 'Twenty-Five', 'Twenty-Six', 'Twenty-Seven', 'Twenty-Eight', 'Twenty-Nine', 'Thirty'];
-        const numWordsVn = ['Không', 'Một', 'Hai', 'Ba', 'Bốn', 'Năm', 'Sáu', 'Bảy', 'Tám', 'Chín', 'Mười', 'Mười Một', 'Mười Hai', 'Mười Ba', 'Mười Bốn', 'Mười Lăm', 'Mười Sáu', 'Mười Bảy', 'Mười Tám', 'Mười Chín', 'Hai Mươi', 'Hai Mươi Mốt', 'Hai Mươi Hai', 'Hai Mươi Ba', 'Hai Mươi Bốn', 'Hai Mươi Lăm', 'Hai Mươi Sáu', 'Hai Mươi Bảy', 'Hai Mươi Tám', 'Hai Mươi Chín', 'Ba Mươi'];
-        for (let i = 1; i <= 30; i++) {
-            database.numbers.push({
-                vn: numWordsVn[i],
-                en: numWordsEn[i],
-                img: `https://placehold.co/600x600/f39c12/ffffff.png?text=${i}`
-            });
-        }
-
-        // Nạp kho dữ liệu cá nhân từ thiết bị
-        let customData = [];
-        try {
-            const saved = localStorage.getItem('sunny_custom_words');
-            if (saved) customData = JSON.parse(saved);
-        } catch (e) {
-            console.error(e);
-        }
-        database.custom = customData;
-
-        let currentSwiper = null;
-        let ttsAudio;
-        let currentThemeWords = [];
-        let sysVoices = [];
-
-        let ttsSettings = {
-            engine: 'google',
-            speed: 1.0,
-            voiceEn: '',
-            voiceVi: '',
-            edgeEn: 'en-US-AnaNeural',
-            edgeVi: 'vi-VN-HoaiMyNeural'
-        };
-
-        try {
-            const savedSettings = localStorage.getItem('sunny_tts_settings');
-            if (savedSettings) ttsSettings = JSON.parse(savedSettings);
-        } catch (e) {
-            console.error(e);
-        }
-
-        // Tải danh sách giọng có sẵn của thiết bị
-        function populateVoices() {
-            sysVoices = window.speechSynthesis.getVoices();
-            const enSelect = document.getElementById('voice-en');
-            const viSelect = document.getElementById('voice-vi');
-
-            enSelect.innerHTML = '<option value="">-- Mặc định --</option>';
-            viSelect.innerHTML = '<option value="">-- Mặc định --</option>';
-
-            sysVoices.forEach(voice => {
-                const opt = `<option value="${voice.name}">${voice.name} (${voice.lang || 'Khác'})</option>`;
-                enSelect.innerHTML += opt;
-                viSelect.innerHTML += opt;
-            });
-
-            enSelect.value = ttsSettings.voiceEn || '';
-            viSelect.value = ttsSettings.voiceVi || '';
-        }
-
-        if ('speechSynthesis' in window) {
-            speechSynthesis.onvoiceschanged = populateVoices;
-        }
-
-        // Logic UI cấu hình
-        function showSettingsModal() {
-            document.getElementById('tts-engine').value = ttsSettings.engine;
-            document.getElementById('tts-speed').value = ttsSettings.speed;
-            document.getElementById('speed-val').innerText = ttsSettings.speed;
-            document.getElementById('edge-en').value = ttsSettings.edgeEn || 'en-US-AnaNeural';
-            document.getElementById('edge-vi').value = ttsSettings.edgeVi || 'vi-VN-HoaiMyNeural';
-
-            if (sysVoices.length === 0) populateVoices();
-
-            updateSettingsUI();
-            document.getElementById('settings-modal').style.display = 'flex';
-        }
-
-        function updateSettingsUI() {
-            const engine = document.getElementById('tts-engine').value;
-            document.getElementById('system-voice-settings').style.display = engine === 'system' ? 'block' : 'none';
-            document.getElementById('edge-voice-settings').style.display = engine === 'edge' ? 'block' : 'none';
-        }
-
-        function saveSettings() {
-            ttsSettings.engine = document.getElementById('tts-engine').value;
-            ttsSettings.speed = parseFloat(document.getElementById('tts-speed').value);
-            ttsSettings.voiceEn = document.getElementById('voice-en').value;
-            ttsSettings.voiceVi = document.getElementById('voice-vi').value;
-            ttsSettings.edgeEn = document.getElementById('edge-en').value;
-            ttsSettings.edgeVi = document.getElementById('edge-vi').value;
-
-            localStorage.setItem('sunny_tts_settings', JSON.stringify(ttsSettings));
-            document.getElementById('settings-modal').style.display = 'none';
-
-            // Test mẫu
-            speak('Settings saved', 'en');
-            setTimeout(() => speak('Đã lưu cấu hình', 'vi'), 1500);
-        }
-
-        const edgeBlobCache = {};
-        function playEdgeTTS(text, lang, speed) {
-            const voice = lang === 'en' ? (ttsSettings.edgeEn || 'en-US-AnaNeural') : (ttsSettings.edgeVi || 'vi-VN-HoaiMyNeural');
-            const cacheKey = voice + "_" + text;
-            const xmlLang = lang === 'en' ? 'en-US' : 'vi-VN';
-            
-            if (edgeBlobCache[cacheKey]) {
-                ttsAudio.src = edgeBlobCache[cacheKey];
-                ttsAudio.oncanplaythrough = () => {
-                    ttsAudio.playbackRate = speed;
-                    ttsAudio.play().catch(e => {});
-                    ttsAudio.oncanplaythrough = null;
-                };
-                return;
+        window.addEventListener('DOMContentLoaded', () => {
+            // Render theme chips
+            const chips = document.getElementById('theme-chips');
+            if (chips) {
+                let html = '<button class="theme-chip active" onclick="switchTheme(\'animals\', this)">🐼 Động Vật</button>';
+                html += '<button class="theme-chip" onclick="switchTheme(\'fruits\', this)">🍎 Hoa Quả</button>';
+                html += '<button class="theme-chip" onclick="switchTheme(\'vehicles\', this)">🚗 Xe Cộ</button>';
+                html += '<button class="theme-chip" onclick="switchTheme(\'colors\', this)">🎨 Màu Sắc</button>';
+                html += '<button class="theme-chip" onclick="switchTheme(\'alphabet\', this)">🔤 Chữ Cái</button>';
+                html += '<button class="theme-chip" onclick="switchTheme(\'numbers\', this)">🔢 Đếm Số</button>';
+                chips.innerHTML = html;
             }
 
-            // Dùng token và endpoint ổn định nhất
-            const ws = new WebSocket("wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4");
-            let audioParts = [];
-
-            ws.onopen = () => {
-                const reqId = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, c => (c=='x'?Math.random()*16|0:(Math.random()*16|0&0x3|0x8)).toString(16));
-                ws.send(`X-Timestamp:${new Date().toISOString()}\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`);
-                ws.send(`X-RequestId:${reqId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${new Date().toISOString()}\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${xmlLang}'><voice name='${voice}'>${text}</voice></speak>`);
-            };
-
-            ws.onmessage = async (e) => {
-                if (typeof e.data === 'string') {
-                    if (e.data.includes('Path:turn.end')) {
-                        ws.close();
-                        const blob = new Blob(audioParts, { type: 'audio/mp3' });
-                        const url = URL.createObjectURL(blob);
-                        edgeBlobCache[cacheKey] = url;
-                        ttsAudio.src = url;
-                        ttsAudio.oncanplaythrough = () => {
-                            ttsAudio.playbackRate = speed;
-                            ttsAudio.play().catch(err => fallbackSpeak(text, lang));
-                            ttsAudio.oncanplaythrough = null;
-                        };
-                    }
-                } else {
-                    const buffer = await e.data.arrayBuffer();
-                    const view = new Uint8Array(buffer);
-                    let headerEnd = -1;
-                    for (let i = 0; i < view.length - 3; i++) {
-                        if (view[i] === 13 && view[i+1] === 10 && view[i+2] === 13 && view[i+3] === 10) {
-                            headerEnd = i + 4;
-                            break;
-                        }
-                    }
-                    if (headerEnd !== -1) audioParts.push(buffer.slice(headerEnd));
-                }
-            };
-            ws.onerror = () => {
-                ws.close();
-                fallbackSpeak(text, lang);
-            };
-        }
-
-        // Mở khóa Audio trên hệ thống iOS/Android
-        function initAudioUnlock() {
-            if (!ttsAudio) ttsAudio = document.getElementById('ttsAudio');
-            if (ttsAudio && !ttsAudio.unlocked) {
-                ttsAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
-                ttsAudio.play().then(() => ttsAudio.unlocked = true).catch(e => { });
-            }
-        }
-
-        // Đọc TTS 
-        function speak(text, lang) {
-            if (!ttsAudio) ttsAudio = document.getElementById('ttsAudio');
-
-            // Set speed for Audio tag (Google)
-            if (ttsAudio) ttsAudio.playbackRate = ttsSettings.speed;
-
-            if (ttsSettings.engine === 'system') {
-                fallbackSpeak(text, lang);
-                return;
-            }
-            
-            if (ttsSettings.engine === 'edge') {
-                playEdgeTTS(text, lang, ttsSettings.speed);
-                return;
-            }
-
-            const gLang = lang == "en" ? "en" : "vi";
-            const fallbackLang = lang == "en" ? "en-US" : "vi-VN";
-
-            if (ttsAudio) {
-                const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${gLang}&q=${encodeURIComponent(text)}`;
-                ttsAudio.src = url;
-                ttsAudio.play().catch(e => fallbackSpeak(text, fallbackLang));
-            } else {
-                fallbackSpeak(text, fallbackLang);
-            }
-        }
-
-        function fallbackSpeak(text, lang) {
-            if (!('speechSynthesis' in window)) return;
-            const msg = new SpeechSynthesisUtterance(text);
-            const fallbackLang = lang == "en" ? "en-US" : "vi-VN";
-            msg.lang = fallbackLang;
-
-            if (ttsSettings.engine === 'system') {
-                msg.rate = ttsSettings.speed;
-                const targetVoiceName = lang == "en" ? ttsSettings.voiceEn : ttsSettings.voiceVi;
-                if (targetVoiceName && sysVoices.length > 0) {
-                    const matchedVoice = sysVoices.find(v => v.name === targetVoiceName);
-                    if (matchedVoice) msg.voice = matchedVoice;
-                }
-            } else {
-                msg.rate = 1.0;
-            }
-
-            msg.pitch = 1.0;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(msg);
-        }
-
-        // Trộn một mảng
-        function shuffleArray(array) {
-            let arr = [...array];
-            let curId = arr.length;
-            while (0 !== curId) {
-                let randId = Math.floor(Math.random() * curId);
-                curId -= 1;
-                let tmp = arr[curId];
-                arr[curId] = arr[randId];
-                arr[randId] = tmp;
-            }
-            return arr;
-        }
-
-        // Load chủ đề ngẫu nhiên (tất cả thẻ)
-        function loadRandomAll() {
-            let allWords = [];
-            for (let key in database) {
-                if (key !== 'random' && database[key].length > 0) {
-                    allWords = allWords.concat(database[key]);
-                }
-            }
-            database.random = shuffleArray(allWords);
-            loadTheme('random');
-        }
-
-        // Xử lý mở Từ của Bé
-        function handleCustomTheme() {
-            if (database.custom.length === 0) {
-                alert("Chưa có thẻ nào trong chủ đề này! Nhấn nút 'Thêm Mới' để bắt đầu tạo nhé!");
-            } else {
-                loadTheme('custom');
-            }
-        }
-
-        // Hiển thị/ẩn Modal
-        let currentEditIndex = -1;
-
-        function showAddWordModal(editIndex = -1) {
-            currentEditIndex = editIndex;
-            const modalTitle = document.querySelector('.modal-content h2');
-            const enInput = document.getElementById('new-en');
-            const vnInput = document.getElementById('new-vn');
-
-            if (editIndex !== -1) {
-                modalTitle.innerText = "✏️ Sửa Từ";
-                enInput.value = database.custom[editIndex].en;
-                vnInput.value = database.custom[editIndex].vn;
-            } else {
-                modalTitle.innerText = "✨ Thêm Từ Mới";
-                enInput.value = "";
-                vnInput.value = "";
-            }
-            document.getElementById('add-word-modal').style.display = 'flex';
-        }
-
-        function hideAddWordModal() {
-            document.getElementById('add-word-modal').style.display = 'none';
-        }
-
-        // Lưu từ mới / Cập nhật từ cũ
-        function saveNewWord() {
-            const enInput = document.getElementById('new-en');
-            const vnInput = document.getElementById('new-vn');
-            const enWord = enInput.value.trim();
-            const vnWord = vnInput.value.trim();
-
-            if (!vnWord || !enWord) {
-                alert("Mẹ/Bé vui lòng nhập đủ cả 2 ô Tiếng Anh và Tiếng Việt nhé!");
-                return;
-            }
-
-            const newImg = `https://placehold.co/600x600/1abc9c/ffffff.png?text=${encodeURIComponent(enWord.toUpperCase())}`;
-
-            if (currentEditIndex !== -1) {
-                database.custom[currentEditIndex].en = enWord;
-                database.custom[currentEditIndex].vn = vnWord;
-                database.custom[currentEditIndex].img = newImg;
-            } else {
-                database.custom.push({ vn: vnWord, en: enWord, img: newImg });
-            }
-
-            localStorage.setItem('sunny_custom_words', JSON.stringify(database.custom));
-
-            hideAddWordModal();
-
-            if (document.getElementById('main-swiper').style.display === 'block' && currentThemeWords === database.custom) {
-                loadTheme('custom');
-            } else {
-                alert(currentEditIndex !== -1 ? "Đã sửa thành công!" : "Tuyệt vời! Đã lưu thành công vào nhóm 'Từ Của Bé' ⭐");
-            }
-        }
-
-        // Xoá từ
-        function deleteCustomWord(index) {
-            if (confirm("Mẹ/Bé có chắc chắn muốn xoá thẻ này không?")) {
-                database.custom.splice(index, 1);
-                localStorage.setItem('sunny_custom_words', JSON.stringify(database.custom));
-                if (database.custom.length === 0) {
-                    showThemes();
-                } else {
-                    loadTheme('custom');
-                }
-            }
-        }
-
-        // Nạp và hiển thị chủ đề
-        function loadTheme(themeKey) {
-            initAudioUnlock();
-
-            currentThemeWords = database[themeKey];
-            const slidesContainer = document.getElementById("slides");
-            slidesContainer.innerHTML = '';
-
-            currentThemeWords.forEach((word, index) => {
-                let manageButtons = '';
-                if (themeKey === 'custom') {
-                    manageButtons = `
-                    <div style="display: flex; gap: 15px; margin-top: 15px;">
-                        <button onclick="showAddWordModal(${index})" style="background:#f39c12; border:none; padding:10px 20px; border-radius:15px; color:white; font-weight:bold; cursor:pointer; font-size:1rem; box-shadow: 0 4px rgba(0,0,0,0.2);">✏️ Sửa Lại</button>
-                        <button onclick="deleteCustomWord(${index})" style="background:#e74c3c; border:none; padding:10px 20px; border-radius:15px; color:white; font-weight:bold; cursor:pointer; font-size:1rem; box-shadow: 0 4px rgba(0,0,0,0.2);">🗑️ Bỏ Thẻ</button>
-                    </div>`;
-                }
-
-                slidesContainer.innerHTML += `
-                <div class="swiper-slide">
-                    <img src="${word.img}" class="card-img" alt="${word.en}">
-                    <h1 class="card-en">${word.en}</h1>
-                    <div class="card-vn">${word.vn}</div>
-                    <div class="speak-buttons">
-                        <button class="btn-speak btn-en" onclick="speak('${word.en}', 'en')">🔊 English</button>
-                        <button class="btn-speak btn-vn" onclick="speak('${word.vn}', 'vi')">🔊 Tiếng Việt</button>
-                    </div>
-                    ${manageButtons}
-                </div>`;
-            });
-
-            // Chuyển màn hình
-            document.getElementById('theme-screen').style.display = 'none';
-            document.getElementById('main-swiper').style.display = 'block';
-            document.getElementById('btn-back').style.display = 'flex';
-            document.getElementById('swipe-guide').style.display = 'block';
-
-            // Reset lặp lại Swiper nếu đã có
-            if (currentSwiper) {
-                currentSwiper.destroy();
-            }
-
-            // Khởi tạo Swiper Lặp Vô Tận
-            currentSwiper = new Swiper('.swiper', {
-                direction: 'vertical',
-                loop: true,
-                mousewheel: true,
-                grabCursor: true,
-                on: {
-                    slideChange: function () {
-                        // Lấy chỉ mục thật trong vòng lặp vô tận
-                        const index = this.realIndex;
-                        if (currentThemeWords[index]) {
-                            speak(currentThemeWords[index].en, 'en');
-                        }
-                    }
-                }
-            });
-
-            // Đọc thẻ đầu tiên ngay khi mở
             setTimeout(() => {
-                speak(currentThemeWords[0].en, 'en');
-            }, 600);
-        }
+                if (window.sunnyApp && window.sunnyApp.games) {
+                    window.sunnyApp.games.startFlashcards('animals');
+                }
+            }, 100);
+        });
 
-        // Trở về Menu chính
-        function showThemes() {
-            document.getElementById('theme-screen').style.display = 'flex';
-            document.getElementById('main-swiper').style.display = 'none';
-            document.getElementById('btn-back').style.display = 'none';
-            document.getElementById('swipe-guide').style.display = 'none';
-
-            if (currentSwiper) {
-                currentSwiper.destroy();
-                currentSwiper = null;
+        function switchTheme(catKey, elem) {
+            document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active'));
+            if (elem) elem.classList.add('active');
+            if (window.sunnyApp && window.sunnyApp.games) {
+                window.sunnyApp.games.startFlashcards(catKey);
             }
-            if (ttsAudio) {
-                ttsAudio.pause();
-            }
-            window.speechSynthesis.cancel();
         }
     </script>
 </body>
