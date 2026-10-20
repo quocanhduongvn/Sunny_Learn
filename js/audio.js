@@ -1,8 +1,7 @@
 /**
- * SUNNY PANDA - High-Fidelity Audio & Speech Engine
- * Hybrid Multi-Tier Audio:
- * Tier 1: Local MP3 recordings (sound/Zero.mp3 - Nine.mp3)
- * Tier 2: Real Native Speaker Studio MP3 stream (Youdao Audio CDN - 100% reliable, zero CORS/403)
+ * SUNNY PANDA - Enterprise-Grade Kids Audio Engine
+ * Tier 1: Local Studio MP3 Recordings (117 bundled offline files in sound/words/)
+ * Tier 2: Real Native Speaker Online Stream (dictvoice CDN fallback)
  * Tier 3: Native Web Speech API (with Chromium pause/resume bug fixes)
  * Tier 4: Procedural Web Audio SFX (pops, stars, fanfare, chomp) + BGM Synthesizer
  */
@@ -14,12 +13,12 @@ class PandaAudioEngine {
         this.bgmTimer = null;
         this.bgmVolume = 0.25;
         this.sfxVolume = 0.9;
-        this.currentAudioElem = null;
         this.unlocked = false;
+        this.domAudio = null;
 
         // Settings loaded from localStorage
         this.settings = {
-            ttsEngine: 'hybrid', // 'hybrid' (Real MP3 + Web Speech) | 'system'
+            ttsEngine: 'local', // 'local' (High-Quality Local MP3) | 'system' (Web Speech)
             speed: 0.9,
             voiceEn: '',
             voiceVi: '',
@@ -32,20 +31,30 @@ class PandaAudioEngine {
         this.setupGlobalUnlockListener();
     }
 
+    getDomAudio() {
+        if (!this.domAudio) {
+            this.domAudio = document.getElementById('masterAudio');
+            if (!this.domAudio) {
+                this.domAudio = document.createElement('audio');
+                this.domAudio.id = 'masterAudio';
+                this.domAudio.preload = 'auto';
+                document.body.appendChild(this.domAudio);
+            }
+        }
+        return this.domAudio;
+    }
+
     loadSettings() {
         try {
-            const saved = localStorage.getItem('sunny_panda_settings') || localStorage.getItem('sunny_tts_settings');
+            const saved = localStorage.getItem('sunny_panda_settings');
             if (saved) {
                 const parsed = JSON.parse(saved);
                 this.settings = { ...this.settings, ...parsed };
             }
         } catch (e) {}
 
-        // Always ensure hybrid/system engine is active (discard old broken edge/google tokens)
-        if (this.settings.ttsEngine === 'edge' || this.settings.ttsEngine === 'google' || !this.settings.ttsEngine) {
-            this.settings.ttsEngine = 'hybrid';
-            this.saveSettings();
-        }
+        // Always ensure local engine is preferred
+        this.settings.ttsEngine = 'local';
     }
 
     saveSettings() {
@@ -76,7 +85,14 @@ class PandaAudioEngine {
             this.ctx.resume().catch(() => {});
         }
 
-        // 2. Web Speech API resume for Chrome/Safari
+        // 2. DOM Audio tag unlock
+        const audio = this.getDomAudio();
+        if (audio) {
+            audio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+            audio.play().catch(() => {});
+        }
+
+        // 3. Web Speech API resume for Chrome/Safari
         if ('speechSynthesis' in window) {
             try {
                 if (window.speechSynthesis.paused) {
@@ -88,7 +104,7 @@ class PandaAudioEngine {
             } catch (e) {}
         }
 
-        // 3. Start BGM
+        // 4. Start BGM
         if (this.settings.bgmEnabled && !this.bgmPlaying) {
             setTimeout(() => this.startBgm(), 300);
         }
@@ -318,7 +334,7 @@ class PandaAudioEngine {
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq, now);
 
-                gain.gain.setValueAtTime(this.bgmVolume * 0.2, now);
+                gain.gain.setValueAtTime(this.bgmVolume * 0.18, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
 
                 osc.connect(gain);
@@ -346,19 +362,26 @@ class PandaAudioEngine {
     }
 
     // ==========================================
-    // MASTER VOCAL PRONUNCIATION (Real MP3 + Fallback)
+    // LOCAL SOUND RESOLVER (sound/words/*.mp3)
     // ==========================================
 
-    speak(text, lang = 'en', onEnd) {
-        if (!text) {
-            if (onEnd) onEnd();
-            return;
+    findLocalAudio(text) {
+        if (!text) return null;
+        let clean = text.trim().toLowerCase().replace(/[\.,\?!]/g, '');
+
+        // 1. Single letters (a -> sound/words/letter_a.mp3)
+        if (clean.length === 1 && clean >= 'a' && clean <= 'z') {
+            return `sound/words/letter_${clean}.mp3`;
         }
 
-        this.unlockAudio();
+        // "letter x" format
+        if (clean.startsWith('letter ') && clean.length === 8) {
+            const char = clean.split(' ')[1];
+            return `sound/words/letter_${char}.mp3`;
+        }
 
-        // 1. Check if word is a number 0-9 with existing local mp3
-        const numMap = {
+        // 2. Numbers in sound/ (0-9)
+        const rootNumbers = {
             'zero': 'sound/Zero.mp3', '0': 'sound/Zero.mp3',
             'one': 'sound/One.mp3', '1': 'sound/One.mp3',
             'two': 'sound/Two.mp3', '2': 'sound/Two.mp3',
@@ -370,54 +393,96 @@ class PandaAudioEngine {
             'eight': 'sound/Eight.mp3', '8': 'sound/Eight.mp3',
             'nine': 'sound/Nine.mp3', '9': 'sound/Nine.mp3'
         };
+        if (rootNumbers[clean]) return rootNumbers[clean];
 
-        const clean = text.toLowerCase().trim();
-        if (numMap[clean]) {
-            this.playMp3(numMap[clean], onEnd, () => {
-                this.speakSystem(text, lang, onEnd);
-            });
+        // 3. Normalized vocabulary words
+        const fileSafe = clean.replace(/\s+/g, '_');
+        const knownFiles = [
+            'apple', 'bear', 'cat', 'dog', 'elephant', 'fish', 'giraffe', 'horse', 'ice_cream', 'juice', 'kite', 'lion', 'monkey', 'nest', 'orange', 'panda', 'queen', 'rabbit', 'sun', 'tiger', 'umbrella', 'van', 'watermelon', 'xylophone', 'yogurt', 'zebra',
+            'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
+            'duck', 'pig', 'cow', 'dolphin', 'penguin',
+            'strawberry', 'grape', 'mango', 'carrot', 'corn', 'bamboo',
+            'bus', 'train', 'airplane', 'helicopter', 'bicycle', 'boat', 'rocket',
+            'red', 'blue', 'green', 'yellow', 'pink', 'purple', 'circle', 'square', 'triangle', 'star', 'heart',
+            'eyes', 'ears', 'nose', 'mouth', 'hands', 'feet', 'head',
+            'mommy', 'daddy', 'baby', 'brother', 'sister', 'grandma', 'grandpa', 'milk', 'cookie'
+        ];
+
+        if (knownFiles.includes(fileSafe)) {
+            return `sound/words/${fileSafe}.mp3`;
+        }
+
+        return null;
+    }
+
+    // ==========================================
+    // MASTER VOCAL PRONUNCIATION
+    // ==========================================
+
+    speak(text, lang = 'en', onEnd) {
+        if (!text) {
+            if (onEnd) onEnd();
             return;
         }
 
-        // 2. If English word or letter or short phrase: use Studio Native Speaker MP3
+        this.unlockAudio();
+
+        // 1. Try Local Studio MP3 File First (100% offline, 0ms latency, zero CORS)
+        if (lang === 'en') {
+            const localFile = this.findLocalAudio(text);
+            if (localFile) {
+                this.playAudioFile(localFile, onEnd, () => {
+                    // Fallback to online stream or Web Speech if local file fails
+                    this.playOnlineOrSpeech(text, lang, onEnd);
+                });
+                return;
+            }
+        }
+
+        // 2. Fallback to online stream or Web Speech API
+        this.playOnlineOrSpeech(text, lang, onEnd);
+    }
+
+    playOnlineOrSpeech(text, lang = 'en', onEnd) {
+        // If short English word: try studio stream first
         if (lang === 'en' && text.length <= 40) {
-            // Free, fast, crystal clear native speaker American English MP3
             const studioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=2`;
-            this.playMp3(studioUrl, onEnd, () => {
-                // Offline fallback: Web Speech API
+            this.playAudioFile(studioUrl, onEnd, () => {
                 this.speakSystem(text, lang, onEnd);
             });
             return;
         }
 
-        // 3. For Vietnamese or longer sentences: use Native Web Speech API
+        // Long sentences or Vietnamese: use Web Speech API
         this.speakSystem(text, lang, onEnd);
     }
 
-    playMp3(url, onEnd, onFail) {
-        if (this.currentAudioElem) {
-            try {
-                this.currentAudioElem.pause();
-                this.currentAudioElem.currentTime = 0;
-            } catch (e) {}
+    playAudioFile(url, onEnd, onFail) {
+        const audio = this.getDomAudio();
+        if (!audio) {
+            if (onFail) onFail();
+            return;
         }
 
-        const audio = new Audio();
-        this.currentAudioElem = audio;
+        try {
+            audio.pause();
+            audio.currentTime = 0;
+        } catch (e) {}
+
         audio.playbackRate = this.settings.speed || 1.0;
         audio.volume = 1.0;
 
-        let resolved = false;
+        let handled = false;
         const done = () => {
-            if (!resolved) {
-                resolved = true;
+            if (!handled) {
+                handled = true;
                 if (onEnd) onEnd();
             }
         };
 
         const fail = () => {
-            if (!resolved) {
-                resolved = true;
+            if (!handled) {
+                handled = true;
                 if (onFail) onFail();
                 else done();
             }
@@ -427,12 +492,9 @@ class PandaAudioEngine {
         audio.onerror = fail;
 
         audio.src = url;
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.catch((err) => {
-                console.warn('MP3 play caught error:', err);
-                fail();
-            });
+        const p = audio.play();
+        if (p !== undefined) {
+            p.catch(() => fail());
         }
     }
 
@@ -443,7 +505,7 @@ class PandaAudioEngine {
         }
 
         try {
-            // Fix Chrome speech synthesis engine pause state
+            // Fix Chromium speech synthesis engine pause state
             if (window.speechSynthesis.paused) {
                 window.speechSynthesis.resume();
             }
@@ -477,14 +539,13 @@ class PandaAudioEngine {
 
             window.speechSynthesis.speak(msg);
 
-            // Chrome bug pump: periodically resume if engine gets stuck
+            // Chrome bug resume pump
             setTimeout(() => {
                 if (window.speechSynthesis.paused) {
                     window.speechSynthesis.resume();
                 }
             }, 60);
         } catch (e) {
-            console.warn('speakSystem exception:', e);
             if (onEnd) onEnd();
         }
     }
