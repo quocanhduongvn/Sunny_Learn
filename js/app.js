@@ -260,14 +260,11 @@ class SunnyPandaApp {
     }
 
     testAudioInSettings() {
-        if (window.pandaAudio) {
-            window.pandaAudio.unlockAudio();
-            window.pandaAudio.playSfx('fanfare');
-            setTimeout(() => {
-                window.pandaAudio.speak("Panda", "en", () => {
-                    setTimeout(() => window.pandaAudio.speak("Apple", "en"), 700);
-                });
-            }, 300);
+        if (typeof playEnglishAudio === 'function') {
+            playEnglishAudio("Apple");
+            setTimeout(() => playEnglishAudio("Panda"), 1200);
+        } else if (window.pandaAudio) {
+            window.pandaAudio.speak("Apple", "en");
         }
     }
 

@@ -1410,3 +1410,10 @@ body {
     0% { transform: scale(1); filter: brightness(1); }
     100% { transform: scale(1.02); filter: brightness(1.08); }
 }
+
+.playing-audio {
+    transform: scale(1.06) !important;
+    box-shadow: 0 0 20px rgba(46, 213, 115, 0.7) !important;
+    border-color: #2ed573 !important;
+    transition: all 0.2s ease !important;
+}

@@ -1,47 +1,129 @@
 /**
- * SUNNY PANDA - Enterprise-Grade Kids Audio Engine
- * Tier 1: Local Studio MP3 Recordings (117 bundled offline files in sound/words/)
- * Tier 2: Real Native Speaker Online Stream (dictvoice CDN fallback)
- * Tier 3: Native Web Speech API (with Chromium pause/resume bug fixes)
- * Tier 4: Procedural Web Audio SFX (pops, stars, fanfare, chomp) + BGM Synthesizer
+ * SUNNY PANDA - Enterprise Audio Engine
+ * Modeled after TOI-TU-HOC proven architecture:
+ * Instant Web Speech API + High-Fidelity MP3 Audio Fallback + Local Sound Files
  */
 
+// ==================== HỆ THỐNG PHÁT ÂM TIẾNG ANH (CHUẨN THEO TOI-TU-HOC) ====================
+function playEnglishAudio(text, buttonElement = null, onEnd = null) {
+    if (!text) return;
+
+    if (buttonElement && buttonElement.classList) {
+        buttonElement.classList.add("playing-audio");
+        setTimeout(() => buttonElement.classList.remove("playing-audio"), 1200);
+    }
+
+    // Chuẩn hóa từ để tìm file
+    const cleanWord = text.trim().toLowerCase().replace(/[\.,\?!]/g, '').replace(/\s+/g, '_');
+    
+    // Nguồn âm thanh MP3 (ưu tiên local, fallback Youdao Audio như app tiếng Trung)
+    const playFallbackMp3 = () => {
+        try {
+            // 1. Thử file local mp3 trong sound/words/
+            const localUrl = `sound/words/${cleanWord}.mp3`;
+            const audio = new Audio(localUrl);
+            
+            audio.onended = () => { if (onEnd) onEnd(); };
+            
+            const p = audio.play();
+            if (p !== undefined) {
+                p.catch(() => {
+                    // 2. Nếu file local không có, phát ngay qua stream bản xứ (như app tiếng Trung của bạn)
+                    const streamUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=2`;
+                    const onlineAudio = new Audio(streamUrl);
+                    onlineAudio.onended = () => { if (onEnd) onEnd(); };
+                    onlineAudio.play().catch(err => {
+                        console.warn("Không thể phát âm thanh:", err);
+                        if (onEnd) onEnd();
+                    });
+                });
+            }
+        } catch (e) {
+            console.error("Audio error:", e);
+            if (onEnd) onEnd();
+        }
+    };
+
+    // Thử dùng Web Speech API nếu trình duyệt hỗ trợ
+    if ('speechSynthesis' in window) {
+        try {
+            window.speechSynthesis.cancel(); // Dừng câu trước đó nếu đang đọc
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85; // Tốc độ hơi chậm cho người mới bắt đầu dễ nghe
+
+            const voices = window.speechSynthesis.getVoices();
+            const enVoice = voices.find(v => v.lang.startsWith('en') || v.lang.includes('US') || v.lang.includes('GB'));
+            if (enVoice) {
+                utterance.voice = enVoice;
+            }
+
+            let started = false;
+            utterance.onstart = () => { started = true; };
+            utterance.onend = () => { if (onEnd) onEnd(); };
+            utterance.onerror = () => {
+                playFallbackMp3();
+            };
+
+            window.speechSynthesis.speak(utterance);
+
+            // Kiểm tra an toàn: nếu sau 350ms Web Speech không cất tiếng, tự động phát MP3
+            setTimeout(() => {
+                if (!started) {
+                    playFallbackMp3();
+                }
+            }, 350);
+
+        } catch (e) {
+            playFallbackMp3();
+        }
+    } else {
+        playFallbackMp3();
+    }
+}
+
+// ==================== PHÁT ÂM TIẾNG VIỆT ====================
+function playVietnameseAudio(text, onEnd = null) {
+    if (!text) return;
+    if ('speechSynthesis' in window) {
+        try {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'vi-VN';
+            utterance.rate = 0.9;
+            const voices = window.speechSynthesis.getVoices();
+            const viVoice = voices.find(v => v.lang.startsWith('vi'));
+            if (viVoice) utterance.voice = viVoice;
+            utterance.onend = () => { if (onEnd) onEnd(); };
+            utterance.onerror = () => { if (onEnd) onEnd(); };
+            window.speechSynthesis.speak(utterance);
+        } catch (e) {
+            if (onEnd) onEnd();
+        }
+    } else {
+        if (onEnd) onEnd();
+    }
+}
+
+// ==================== CLASS ĐIỀU PHỐI ÂM THANH ====================
 class PandaAudioEngine {
     constructor() {
         this.ctx = null;
         this.bgmPlaying = false;
         this.bgmTimer = null;
-        this.bgmVolume = 0.25;
-        this.sfxVolume = 0.9;
+        this.bgmVolume = 0.22;
+        this.sfxVolume = 0.85;
         this.unlocked = false;
-        this.domAudio = null;
 
-        // Settings loaded from localStorage
         this.settings = {
-            ttsEngine: 'local', // 'local' (High-Quality Local MP3) | 'system' (Web Speech)
-            speed: 0.9,
-            voiceEn: '',
-            voiceVi: '',
             bgmEnabled: true,
-            sfxEnabled: true
+            sfxEnabled: true,
+            speed: 0.85
         };
 
         this.loadSettings();
         this.initSysVoices();
         this.setupGlobalUnlockListener();
-    }
-
-    getDomAudio() {
-        if (!this.domAudio) {
-            this.domAudio = document.getElementById('masterAudio');
-            if (!this.domAudio) {
-                this.domAudio = document.createElement('audio');
-                this.domAudio.id = 'masterAudio';
-                this.domAudio.preload = 'auto';
-                document.body.appendChild(this.domAudio);
-            }
-        }
-        return this.domAudio;
     }
 
     loadSettings() {
@@ -52,9 +134,6 @@ class PandaAudioEngine {
                 this.settings = { ...this.settings, ...parsed };
             }
         } catch (e) {}
-
-        // Always ensure local engine is preferred
-        this.settings.ttsEngine = 'local';
     }
 
     saveSettings() {
@@ -79,32 +158,22 @@ class PandaAudioEngine {
         if (this.unlocked) return;
         this.unlocked = true;
 
-        // 1. Web Audio Context
         this.initAudioContext();
         if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume().catch(() => {});
         }
 
-        // 2. DOM Audio tag unlock
-        const audio = this.getDomAudio();
-        if (audio) {
-            audio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
-            audio.play().catch(() => {});
-        }
-
-        // 3. Web Speech API resume for Chrome/Safari
         if ('speechSynthesis' in window) {
             try {
                 if (window.speechSynthesis.paused) {
                     window.speechSynthesis.resume();
                 }
-                const dummy = new SpeechSynthesisUtterance('');
+                const dummy = new SpeechSynthesisUtterance(' ');
                 dummy.volume = 0.01;
                 window.speechSynthesis.speak(dummy);
             } catch (e) {}
         }
 
-        // 4. Start BGM
         if (this.settings.bgmEnabled && !this.bgmPlaying) {
             setTimeout(() => this.startBgm(), 300);
         }
@@ -290,7 +359,7 @@ class PandaAudioEngine {
     }
 
     // ==========================================
-    // PROCEDURAL BACKGROUND MUSIC (BGM)
+    // BACKGROUND MUSIC (BGM)
     // ==========================================
 
     toggleBgm(forceState) {
@@ -362,61 +431,7 @@ class PandaAudioEngine {
     }
 
     // ==========================================
-    // LOCAL SOUND RESOLVER (sound/words/*.mp3)
-    // ==========================================
-
-    findLocalAudio(text) {
-        if (!text) return null;
-        let clean = text.trim().toLowerCase().replace(/[\.,\?!]/g, '');
-
-        // 1. Single letters (a -> sound/words/letter_a.mp3)
-        if (clean.length === 1 && clean >= 'a' && clean <= 'z') {
-            return `sound/words/letter_${clean}.mp3`;
-        }
-
-        // "letter x" format
-        if (clean.startsWith('letter ') && clean.length === 8) {
-            const char = clean.split(' ')[1];
-            return `sound/words/letter_${char}.mp3`;
-        }
-
-        // 2. Numbers in sound/ (0-9)
-        const rootNumbers = {
-            'zero': 'sound/Zero.mp3', '0': 'sound/Zero.mp3',
-            'one': 'sound/One.mp3', '1': 'sound/One.mp3',
-            'two': 'sound/Two.mp3', '2': 'sound/Two.mp3',
-            'three': 'sound/Three.mp3', '3': 'sound/Three.mp3',
-            'four': 'sound/Four.mp3', '4': 'sound/Four.mp3',
-            'five': 'sound/Five.mp3', '5': 'sound/Five.mp3',
-            'six': 'sound/Six.mp3', '6': 'sound/Six.mp3',
-            'seven': 'sound/Seven.mp3', '7': 'sound/Seven.mp3',
-            'eight': 'sound/Eight.mp3', '8': 'sound/Eight.mp3',
-            'nine': 'sound/Nine.mp3', '9': 'sound/Nine.mp3'
-        };
-        if (rootNumbers[clean]) return rootNumbers[clean];
-
-        // 3. Normalized vocabulary words
-        const fileSafe = clean.replace(/\s+/g, '_');
-        const knownFiles = [
-            'apple', 'bear', 'cat', 'dog', 'elephant', 'fish', 'giraffe', 'horse', 'ice_cream', 'juice', 'kite', 'lion', 'monkey', 'nest', 'orange', 'panda', 'queen', 'rabbit', 'sun', 'tiger', 'umbrella', 'van', 'watermelon', 'xylophone', 'yogurt', 'zebra',
-            'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
-            'duck', 'pig', 'cow', 'dolphin', 'penguin',
-            'strawberry', 'grape', 'mango', 'carrot', 'corn', 'bamboo',
-            'bus', 'train', 'airplane', 'helicopter', 'bicycle', 'boat', 'rocket',
-            'red', 'blue', 'green', 'yellow', 'pink', 'purple', 'circle', 'square', 'triangle', 'star', 'heart',
-            'eyes', 'ears', 'nose', 'mouth', 'hands', 'feet', 'head',
-            'mommy', 'daddy', 'baby', 'brother', 'sister', 'grandma', 'grandpa', 'milk', 'cookie'
-        ];
-
-        if (knownFiles.includes(fileSafe)) {
-            return `sound/words/${fileSafe}.mp3`;
-        }
-
-        return null;
-    }
-
-    // ==========================================
-    // MASTER VOCAL PRONUNCIATION
+    // SPEAK INTERFACE
     // ==========================================
 
     speak(text, lang = 'en', onEnd) {
@@ -424,129 +439,12 @@ class PandaAudioEngine {
             if (onEnd) onEnd();
             return;
         }
-
         this.unlockAudio();
 
-        // 1. Try Local Studio MP3 File First (100% offline, 0ms latency, zero CORS)
-        if (lang === 'en') {
-            const localFile = this.findLocalAudio(text);
-            if (localFile) {
-                this.playAudioFile(localFile, onEnd, () => {
-                    // Fallback to online stream or Web Speech if local file fails
-                    this.playOnlineOrSpeech(text, lang, onEnd);
-                });
-                return;
-            }
-        }
-
-        // 2. Fallback to online stream or Web Speech API
-        this.playOnlineOrSpeech(text, lang, onEnd);
-    }
-
-    playOnlineOrSpeech(text, lang = 'en', onEnd) {
-        // If short English word: try studio stream first
-        if (lang === 'en' && text.length <= 40) {
-            const studioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=2`;
-            this.playAudioFile(studioUrl, onEnd, () => {
-                this.speakSystem(text, lang, onEnd);
-            });
-            return;
-        }
-
-        // Long sentences or Vietnamese: use Web Speech API
-        this.speakSystem(text, lang, onEnd);
-    }
-
-    playAudioFile(url, onEnd, onFail) {
-        const audio = this.getDomAudio();
-        if (!audio) {
-            if (onFail) onFail();
-            return;
-        }
-
-        try {
-            audio.pause();
-            audio.currentTime = 0;
-        } catch (e) {}
-
-        audio.playbackRate = this.settings.speed || 1.0;
-        audio.volume = 1.0;
-
-        let handled = false;
-        const done = () => {
-            if (!handled) {
-                handled = true;
-                if (onEnd) onEnd();
-            }
-        };
-
-        const fail = () => {
-            if (!handled) {
-                handled = true;
-                if (onFail) onFail();
-                else done();
-            }
-        };
-
-        audio.onended = done;
-        audio.onerror = fail;
-
-        audio.src = url;
-        const p = audio.play();
-        if (p !== undefined) {
-            p.catch(() => fail());
-        }
-    }
-
-    speakSystem(text, lang = 'en', onEnd) {
-        if (!('speechSynthesis' in window)) {
-            if (onEnd) onEnd();
-            return;
-        }
-
-        try {
-            // Fix Chromium speech synthesis engine pause state
-            if (window.speechSynthesis.paused) {
-                window.speechSynthesis.resume();
-            }
-
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = lang === 'en' ? 'en-US' : 'vi-VN';
-            msg.rate = this.settings.speed || 0.9;
-            msg.volume = 1.0;
-            msg.pitch = 1.05;
-
-            if (this.sysVoices.length === 0) {
-                this.sysVoices = window.speechSynthesis.getVoices() || [];
-            }
-
-            const langPrefix = lang === 'en' ? 'en' : 'vi';
-            const matched = this.sysVoices.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix));
-            if (matched) {
-                msg.voice = matched;
-            }
-
-            let finished = false;
-            const complete = () => {
-                if (!finished) {
-                    finished = true;
-                    if (onEnd) onEnd();
-                }
-            };
-
-            msg.onend = complete;
-            msg.onerror = complete;
-
-            window.speechSynthesis.speak(msg);
-
-            // Chrome bug resume pump
-            setTimeout(() => {
-                if (window.speechSynthesis.paused) {
-                    window.speechSynthesis.resume();
-                }
-            }, 60);
-        } catch (e) {
-            if (onEnd) onEnd();
+        if (lang === 'vi') {
+            playVietnameseAudio(text, onEnd);
+        } else {
+            playEnglishAudio(text, null, onEnd);
         }
     }
 
