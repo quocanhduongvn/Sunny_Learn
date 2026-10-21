@@ -5,6 +5,33 @@
  * Tier 3: Web Speech API Fallback
  */
 
+// ==================== MASTER AUDIO CHANNEL & MOBILE AUTOPLAY UNLOCK ====================
+let masterAudioChannel = null;
+
+function getMasterAudio() {
+    if (!masterAudioChannel) {
+        masterAudioChannel = document.getElementById('masterAudio');
+        if (!masterAudioChannel) {
+            masterAudioChannel = document.createElement('audio');
+            masterAudioChannel.id = 'masterAudio';
+            masterAudioChannel.preload = 'auto';
+            document.body.appendChild(masterAudioChannel);
+        }
+    }
+    return masterAudioChannel;
+}
+
+function unlockMasterAudio() {
+    const audio = getMasterAudio();
+    if (audio && !audio.__unlocked) {
+        audio.__unlocked = true;
+        audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+        audio.play().then(() => {
+            audio.pause();
+        }).catch(() => {});
+    }
+}
+
 // ==================== HỆ THỐNG PHÁT ÂM TIẾNG ANH (ƯU TIÊN FILE MP3 BẢN XỨ) ====================
 function playEnglishAudio(text, buttonElement = null, onEnd = null) {
     if (!text) {
@@ -36,11 +63,20 @@ function playEnglishAudio(text, buttonElement = null, onEnd = null) {
     }
 
     console.log(`[AUDIO] Phát âm tiếng Anh: "${text}" -> File: ${localUrl}`);
-    const audio = new Audio(localUrl);
+    const audio = getMasterAudio();
+    try {
+        audio.pause();
+    } catch(e) {}
+
+    audio.src = localUrl;
     audio.volume = 1.0;
 
     let fallbackCalled = false;
     const triggerFallback = (reason) => {
+        // Ignore AbortError when a new sound interrupts the previous one
+        if (reason && (reason.name === 'AbortError' || (reason.message && reason.message.includes('interrupted')))) {
+            return;
+        }
         if (fallbackCalled) return;
         fallbackCalled = true;
         playOnlineStreamAudio(text, onEnd);
@@ -60,6 +96,51 @@ function playEnglishAudio(text, buttonElement = null, onEnd = null) {
             triggerFallback(err);
         });
     }
+}
+
+// Phát chuỗi âm thanh liên tiếp (Ví dụ: "Where is the" + "Cat")
+function playAudioSequence(urls, onEnd = null) {
+    if (!urls || urls.length === 0) {
+        if (onEnd) onEnd();
+        return;
+    }
+
+    const audio = getMasterAudio();
+    let currentIdx = 0;
+
+    const playNext = () => {
+        if (currentIdx >= urls.length) {
+            if (onEnd) onEnd();
+            return;
+        }
+
+        const url = urls[currentIdx];
+        currentIdx++;
+
+        try { audio.pause(); } catch(e) {}
+        audio.src = url;
+        audio.volume = 1.0;
+
+        audio.onended = () => {
+            setTimeout(playNext, 100);
+        };
+
+        audio.onerror = () => {
+            // If one piece of audio is missing, continue to next piece
+            playNext();
+        };
+
+        const p = audio.play();
+        if (p !== undefined) {
+            p.catch(err => {
+                if (!err || err.name !== 'AbortError') {
+                    playNext();
+                }
+            });
+        }
+    };
+
+    playNext();
 }
 
 function playOnlineStreamAudio(text, onEnd = null) {
@@ -191,6 +272,8 @@ class PandaAudioEngine {
     unlockAudio() {
         if (this.unlocked) return;
         this.unlocked = true;
+
+        unlockMasterAudio();
 
         this.initAudioContext();
         if (this.ctx && this.ctx.state === 'suspended') {
@@ -533,4 +616,7 @@ const pandaAudio = new PandaAudioEngine();
 window.pandaAudio = pandaAudio;
 window.playEnglishAudio = playEnglishAudio;
 window.playVietnameseAudio = playVietnameseAudio;
+window.playAudioSequence = playAudioSequence;
+window.unlockMasterAudio = unlockMasterAudio;
+
 

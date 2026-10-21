@@ -332,7 +332,10 @@ class PandaGamesManager {
                     </div>
                     <div class="choice-label">${c.en}</div>
                 `;
-                choiceBtn.onclick = () => this.handleQuizAnswer(c, choiceBtn);
+                choiceBtn.onclick = () => {
+                    playEnglishAudio(c.en);
+                    this.handleQuizAnswer(c, choiceBtn);
+                };
                 grid.appendChild(choiceBtn);
             });
         }
@@ -343,8 +346,18 @@ class PandaGamesManager {
 
     repeatQuizAudio() {
         const target = this.gameState.currentTarget;
-        if (!target || !window.pandaAudio) return;
-        window.pandaAudio.speak(`Where is the ${target.en}?`, 'en');
+        if (!target) return;
+
+        const cleanTarget = target.en.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+        if (typeof playAudioSequence === 'function') {
+            playAudioSequence([
+                'sound/words/where_is_the.mp3',
+                `sound/words/${cleanTarget}.mp3`
+            ]);
+        } else {
+            playEnglishAudio(target.en);
+        }
+
         if (this.app.mascot) {
             this.app.mascot.setMood('think');
             this.app.mascot.say(`Where is the ${target.en}?`, `Bé tìm "${target.vn}" ở đâu nào?`);
@@ -467,14 +480,24 @@ class PandaGamesManager {
                     <div class="food-emoji">${food.emoji}</div>
                     <div class="food-name">${food.en}</div>
                 `;
-                item.onclick = () => this.feedPanda(food, item);
+                item.onclick = () => {
+                    playEnglishAudio(food.en);
+                    this.feedPanda(food, item);
+                };
                 tray.appendChild(item);
             });
         }
 
-        if (window.pandaAudio) {
-            window.pandaAudio.speak(`Please feed me ${target.en}!`, 'en');
+        const cleanTarget = target.en.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+        if (typeof playAudioSequence === 'function') {
+            playAudioSequence([
+                'sound/words/please_feed_me.mp3',
+                `sound/words/${cleanTarget}.mp3`
+            ]);
+        } else {
+            playEnglishAudio(target.en);
         }
+
         if (this.app.mascot) {
             this.app.mascot.setMood('think');
             this.app.mascot.say(`I want ${target.en}! 😋`, `Cho tớ ăn ${target.vn} nha!`);
@@ -575,8 +598,17 @@ class PandaGamesManager {
 
     repeatBalloonAudio() {
         const target = this.gameState.targetLetter;
-        if (!target || !window.pandaAudio) return;
-        window.pandaAudio.speak(`Pop the letter ${target.letter}!`, 'en');
+        if (!target) return;
+
+        if (typeof playAudioSequence === 'function') {
+            playAudioSequence([
+                'sound/words/pop_the_letter.mp3',
+                `sound/words/letter_${target.letter.toLowerCase()}.mp3`
+            ]);
+        } else {
+            playEnglishAudio(target.letter);
+        }
+
         if (this.app.mascot) {
             this.app.mascot.say(`Pop letter ${target.letter}! 🎈`, `Bắn bong bóng chữ ${target.letter} nào!`);
         }
@@ -629,6 +661,9 @@ class PandaGamesManager {
 
         balloon.classList.add('balloon-popped');
         setTimeout(() => balloon.remove(), 250);
+
+        // Always speak the letter on balloon pop
+        playEnglishAudio(item.letter);
 
         if (item.letter === target.letter) {
             // MATCH!
@@ -727,6 +762,10 @@ class PandaGamesManager {
         // Flip card
         if (window.pandaAudio) window.pandaAudio.playSfx('pop');
         cardElem.classList.add('is-flipped');
+
+        // Immediately pronounce the word on card flip
+        playEnglishAudio(cardData.en);
+
         this.gameState.flipped.push({ index, data: cardData, elem: cardElem });
 
         if (this.gameState.flipped.length === 2) {
@@ -811,8 +850,8 @@ class PandaGamesManager {
             </div>
 
             <div class="speak-card">
-                <img id="speak-img" src="" alt="Word" class="speak-photo">
-                <div class="speak-word-en" id="speak-en">Panda</div>
+                <img id="speak-img" src="" alt="Word" class="speak-photo" onclick="sunnyApp.games.playTargetVoice()" style="cursor: pointer;" title="Chạm ảnh để nghe phát âm">
+                <div class="speak-word-en" id="speak-en" onclick="sunnyApp.games.playTargetVoice()" style="cursor: pointer;" title="Chạm chữ để nghe phát âm">Panda 🔊</div>
                 <div class="speak-word-vn" id="speak-vn">Gấu Trúc</div>
                 <button class="btn-speak-listen" onclick="sunnyApp.games.playTargetVoice()">
                     🔊 Nghe Gấu Mẫu Đọc
@@ -844,7 +883,7 @@ class PandaGamesManager {
         const status = document.getElementById('mic-status');
 
         if (img) img.src = item.img || 'https://placehold.co/400x400/2ed573/ffffff.png?text=' + item.en;
-        if (en) en.textContent = item.en;
+        if (en) en.innerHTML = `${item.en} <span style="font-size:1.4rem;">🔊</span>`;
         if (vn) vn.textContent = item.vn;
         if (status) status.textContent = 'Chạm vào micro rồi đọc to nhé bé!';
 
