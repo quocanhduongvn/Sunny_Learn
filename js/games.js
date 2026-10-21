@@ -62,7 +62,7 @@ class PandaGamesManager {
                         </div>
                         <div class="card-word-en" id="fc-en" onclick="event.stopPropagation(); sunnyApp.games.speakCurrent(event, 'en')" style="cursor: pointer;" title="Chạm vào chữ để nghe phát âm tiếng Anh">Word 🔊</div>
                         <div class="card-ipa" id="fc-ipa" onclick="event.stopPropagation(); sunnyApp.games.speakCurrent(event, 'en')" style="cursor: pointer;" title="Phiên âm quốc tế">/wɜːd/</div>
-                        <div class="card-flip-hint">👆 Chạm viền ngoài để lật xem tiếng Việt</div>
+                        <div class="card-flip-hint">👆 Vuốt lên/xuống để lật • Vuốt qua lại để đổi thẻ 👉</div>
                     </div>
 
                     <!-- Back Side -->
@@ -70,7 +70,7 @@ class PandaGamesManager {
                         <div class="back-emoji" id="fc-back-emoji">🌟</div>
                         <div class="back-word-vn" id="fc-vn" onclick="event.stopPropagation(); sunnyApp.games.speakCurrent(event, 'vi')" style="cursor: pointer;" title="Chạm để nghe tiếng Việt">Từ Tiếng Việt 🇻🇳</div>
                         <div class="back-sentence-en" id="fc-sentence" onclick="event.stopPropagation(); sunnyApp.games.speakSentence(event)" style="cursor: pointer;" title="Chạm để nghe cả câu tiếng Anh">Example sentence for kids 🔊</div>
-                        <div class="back-hint">🎉 Giỏi lắm bé ơi!</div>
+                        <div class="back-hint">🎉 Giỏi lắm bé ơi! (Vuốt ngang để tiếp tục)</div>
                     </div>
                 </div>
             </div>
@@ -93,12 +93,23 @@ class PandaGamesManager {
 
             <!-- Progress & Navigation -->
             <div class="card-nav-bar">
-                <button class="nav-arrow-btn" onclick="sunnyApp.games.prevCard()">◀</button>
+                <button class="nav-arrow-btn" onclick="sunnyApp.games.prevCard()" title="Thẻ trước (Vuốt phải)">◀</button>
                 <div class="card-counter" id="fc-counter">1 / 10</div>
-                <button class="nav-arrow-btn" onclick="sunnyApp.games.nextCard()">▶</button>
+                <button class="nav-arrow-btn" onclick="sunnyApp.games.nextCard()" title="Thẻ tiếp theo (Vuốt trái)">▶</button>
             </div>
         </div>
         `;
+
+        // Attach touch & swipe gestures for kids
+        const card = document.getElementById('fc-card');
+        if (card && typeof makeSwipeable === 'function') {
+            makeSwipeable(card, {
+                onSwipeLeft: () => this.nextCard(),
+                onSwipeRight: () => this.prevCard(),
+                onSwipeUp: () => this.flipCard(),
+                onSwipeDown: () => this.flipCard()
+            });
+        }
     }
 
     showFlashcard(index) {
@@ -866,11 +877,19 @@ class PandaGamesManager {
             </div>
 
             <div class="card-nav-bar" style="margin-top:20px;">
-                <button class="nav-arrow-btn" onclick="sunnyApp.games.prevSpeakWord()">◀</button>
-                <button class="nav-arrow-btn" onclick="sunnyApp.games.nextSpeakWord()">▶</button>
+                <button class="nav-arrow-btn" onclick="sunnyApp.games.prevSpeakWord()" title="Từ trước (Vuốt phải)">◀</button>
+                <button class="nav-arrow-btn" onclick="sunnyApp.games.nextSpeakWord()" title="Từ tiếp theo (Vuốt trái)">▶</button>
             </div>
         </div>
         `;
+
+        const sc = document.querySelector('.speak-card');
+        if (sc && typeof makeSwipeable === 'function') {
+            makeSwipeable(sc, {
+                onSwipeLeft: () => this.nextSpeakWord(),
+                onSwipeRight: () => this.prevSpeakWord()
+            });
+        }
     }
 
     showSpeakWord() {

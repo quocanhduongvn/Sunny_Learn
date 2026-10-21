@@ -146,11 +146,19 @@
                     Đóng
                 </button>
             </div>
+
+            <!-- Navigation Controls & Swipe Hint -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:12px; border-top: 1px dashed #E2E8F0;">
+                <button class="nav-arrow-btn" onclick="prevLetter()" style="width:42px; height:42px; font-size:1.1rem;" title="Chữ trước (Vuốt phải)">◀</button>
+                <span style="font-size: 0.82rem; font-weight: 700; color: #718096;">👈 Vuốt qua lại để đổi chữ 👉</span>
+                <button class="nav-arrow-btn" onclick="nextLetter()" style="width:42px; height:42px; font-size:1.1rem;" title="Chữ tiếp theo (Vuốt trái)">▶</button>
+            </div>
         </div>
     </div>
 
     <script src="js/data.js"></script>
     <script src="js/audio.js"></script>
+    <script src="js/gestures.js"></script>
     <script>
         let currentLetterItem = null;
 
@@ -220,12 +228,38 @@
             playVietnameseAudio(currentLetterItem.vn);
         }
 
+        function nextLetter() {
+            if (!currentLetterItem) return;
+            const alphabet = PANDA_DATABASE.alphabet;
+            const idx = alphabet.findIndex(x => x.id === currentLetterItem.id);
+            const nextIdx = (idx + 1) % alphabet.length;
+            openLetterModal(alphabet[nextIdx].id);
+        }
+
+        function prevLetter() {
+            if (!currentLetterItem) return;
+            const alphabet = PANDA_DATABASE.alphabet;
+            const idx = alphabet.findIndex(x => x.id === currentLetterItem.id);
+            const prevIdx = (idx - 1 + alphabet.length) % alphabet.length;
+            openLetterModal(alphabet[prevIdx].id);
+        }
+
         function closeLetterModal(e) {
             document.getElementById('letter-modal').style.display = 'none';
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             renderABCGrid();
+
+            const modalBox = document.querySelector('.active-letter-card');
+            if (modalBox && typeof makeSwipeable === 'function') {
+                makeSwipeable(modalBox, {
+                    onSwipeLeft: () => nextLetter(),
+                    onSwipeRight: () => prevLetter(),
+                    onSwipeUp: () => speakCurrentWordVn(),
+                    onSwipeDown: () => speakCurrentLetter()
+                });
+            }
         });
     </script>
 </body>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sunny-panda-v2.2';
+const CACHE_NAME = 'sunny-panda-v2.3';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -10,6 +10,7 @@ const ASSETS_TO_CACHE = [
     './js/conversation_data.js',
     './js/audio.js',
     './js/mascot.js',
+    './js/gestures.js',
     './js/games.js',
     './js/app.js',
     './manifest.json',
