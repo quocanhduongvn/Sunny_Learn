@@ -22,7 +22,12 @@ function playEnglishAudio(text, buttonElement = null, onEnd = null) {
         }, 1200);
     }
 
-    const cleanWord = text.trim().toLowerCase().replace(/[\.,\?!]/g, '').replace(/\s+/g, '_');
+    const cleanWord = text.trim().toLowerCase()
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+        .replace(/[\.,\?!:;'"()\[\]\{\}]/g, '')
+        .trim()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9_]/g, '');
     
     // 1. ƯU TIÊN PHÁT FILE MP3 LOCAL ĐÃ CÓ TRÊN MÁY (117 files trong sound/words/)
     let localUrl = `sound/words/${cleanWord}.mp3`;

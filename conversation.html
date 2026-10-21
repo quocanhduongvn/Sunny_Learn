@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bé Tập Giao Tiếp Tiếng Anh Hàng Ngày 🐼 - Sunny Panda</title>
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1E90FF">
+</head>
+
+<body>
+
+    <!-- Top Navigation -->
+    <header class="app-navbar">
+        <a href="index.html" class="brand-badge" style="text-decoration:none;">
+            <div class="brand-logo-icon">🐼</div>
+            <div class="brand-text">
+                <h1>Bé Tập Giao Tiếp</h1>
+                <span>Tiếng Anh Đời Sống Cho Bé</span>
+            </div>
+        </a>
+
+        <div class="nav-actions">
+            <!-- Stars -->
+            <div class="star-count-container" title="Số sao bé đạt được">
+                <span>⭐</span>
+                <span class="star-count-badge" id="convo-stars">0</span>
+            </div>
+
+            <!-- Home -->
+            <a href="index.html" class="btn-header" style="text-decoration:none;">
+                🏠 Trang Chủ
+            </a>
+        </div>
+    </header>
+
+    <!-- Master Audio -->
+    <audio id="masterAudio" preload="auto"></audio>
+
+    <main class="convo-container">
+        <!-- Topic Selector Chips -->
+        <div class="theme-selector-chips" id="convo-topic-chips"></div>
+
+        <!-- Mode Toggle Tabs -->
+        <div class="convo-mode-tabs">
+            <button class="convo-tab-btn active" id="tab-cards" onclick="setConvoMode('cards')">
+                <span>🎴</span>
+                <span>Thẻ Luyện Câu</span>
+            </button>
+            <button class="convo-tab-btn" id="tab-chat" onclick="setConvoMode('chat')">
+                <span>🎭</span>
+                <span>Hội Thoại Cùng Gấu</span>
+            </button>
+        </div>
+
+        <!-- VIEW 1: PHRASE CARDS VIEW -->
+        <div id="view-cards-mode">
+            <div class="convo-phrase-card" id="main-phrase-card">
+                <div class="convo-emoji-large" id="card-emoji">👋</div>
+                <br>
+                <span class="convo-context-badge" id="card-context">Khi gặp bạn bè hoặc thầy cô</span>
+                
+                <!-- English Sentence (Click to speak directly) -->
+                <div class="convo-en-text" id="card-en" onclick="speakCurrentPhrase('en')" title="Chạm để nghe phát âm tiếng Anh">
+                    Hello! 🔊
+                </div>
+                <div class="convo-ipa-text" id="card-ipa">/həˈloʊ/</div>
+                <div class="convo-vn-text" id="card-vn" onclick="speakCurrentPhrase('vi')" title="Chạm để nghe tiếng Việt">
+                    Xin chào! 🇻🇳
+                </div>
+
+                <!-- Suggested Reply -->
+                <div id="card-reply-box" style="margin-bottom: 22px; padding: 12px 16px; background: #FFF9E6; border-radius: 16px; border: 2px dashed #F1C40F; display: inline-block; cursor: pointer;" onclick="speakReply()" title="Chạm để nghe câu đáp lại">
+                    <span style="font-size: 0.85rem; font-weight: 800; color: #D35400; display:block;">💡 Bé có thể đáp lại:</span>
+                    <strong style="color: #2D3436; font-size: 1.15rem;" id="card-reply-en">Hello! Nice to meet you!</strong>
+                    <div style="font-size: 0.9rem; color: #7F8C8D;" id="card-reply-vn">Xin chào! Rất vui được gặp bạn!</div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="convo-audio-controls">
+                    <button class="btn-convo-play" onclick="speakCurrentPhrase('en')" title="Phát âm tiếng Anh chuẩn bản xứ">
+                        <span>🔊</span>
+                        <span>Tiếng Anh</span>
+                    </button>
+                    <button class="btn-convo-slow" onclick="speakCurrentPhrase('slow')" title="Nghe chậm từng từ">
+                        <span>🐢</span>
+                        <span>Nghe Chậm</span>
+                    </button>
+                    <button class="btn-convo-slow" style="background:#00B894; border-color:#00A884; box-shadow:0 5px 0 #008f70;" onclick="speakCurrentPhrase('vi')" title="Nghe tiếng Việt">
+                        <span>🇻🇳</span>
+                        <span>Tiếng Việt</span>
+                    </button>
+                    <button class="btn-convo-mic" id="btn-convo-mic" onclick="startMicPractice()" title="Bé nhấn vào đây rồi nói theo nhé!">
+                        <span>🎤</span>
+                        <span>Bé Nói Thử</span>
+                    </button>
+                </div>
+
+                <!-- Speech Recognition Feedback -->
+                <div class="convo-feedback-box" id="convo-feedback"></div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="card-nav-bar" style="margin-top: 15px;">
+                <button class="nav-arrow-btn" onclick="prevPhrase()" title="Câu trước">◀</button>
+                <div class="card-counter" id="phrase-counter">1 / 7</div>
+                <button class="nav-arrow-btn" onclick="nextPhrase()" title="Câu tiếp theo">▶</button>
+            </div>
+        </div>
+
+        <!-- VIEW 2: ROLE-PLAY CHAT DIALOGUE -->
+        <div id="view-chat-mode" style="display:none;">
+            <div class="chat-dialogue-screen">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0 0 5px 0; color: #2D3436; font-size: 1.3rem;" id="chat-title">Hội Thoại Cùng Gấu Trúc Sunny</h3>
+                    <p style="margin: 0; color: #64748B; font-size: 0.9rem; font-weight: 700;">Chạm vào từng tin nhắn để nghe giọng đọc dễ thương</p>
+                </div>
+
+                <div class="chat-message-list" id="chat-messages-container"></div>
+
+                <div class="chat-actions-bar">
+                    <button class="btn-convo-play" style="flex:1;" onclick="nextChatStep()" id="btn-next-chat">
+                        <span>💬</span>
+                        <span id="btn-chat-action-text">Bé Trả Lời Tiếp Theo ▶</span>
+                    </button>
+                    <button class="btn-header" onclick="restartChatDialogue()" title="Học lại từ đầu">
+                        🔄 Đọc Lại
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/mascot.js"></script>
+    <script src="js/conversation_data.js"></script>
+    <script src="js/games.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // State
+        let currentTopicIndex = 0;
+        let currentPhraseIndex = 0;
+        let activeMode = 'cards'; // 'cards' or 'chat'
+        let chatStep = 0;
+        let stars = 15;
+
+        // Load stars
+        try {
+            const saved = localStorage.getItem('sunny_panda_stars');
+            if (saved) stars = parseInt(saved, 10);
+        } catch(e) {}
+
+        function updateStarsBadge() {
+            const b = document.getElementById('convo-stars');
+            if (b) b.textContent = stars;
+            try {
+                localStorage.setItem('sunny_panda_stars', stars.toString());
+            } catch(e) {}
+        }
+
+        function addStars(num) {
+            stars += num;
+            updateStarsBadge();
+            // Animate flying stars
+            const s = document.createElement('div');
+            s.className = 'star-burst-fly';
+            s.innerHTML = `+${num} ⭐`;
+            s.style.left = '50%';
+            s.style.top = '35%';
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 1200);
+            if (window.pandaAudio) {
+                window.pandaAudio.playSfx('star');
+            }
+        }
+
+        // Init Topic Chips
+        function initTopicChips() {
+            const container = document.getElementById('convo-topic-chips');
+            if (!container || !PANDA_CONVERSATIONS) return;
+
+            let html = '';
+            PANDA_CONVERSATIONS.topics.forEach((top, idx) => {
+                const isActive = (idx === currentTopicIndex) ? 'active' : '';
+                html += `
+                <button class="theme-chip ${isActive}" onclick="selectTopic(${idx}, this)" style="border-color:${top.color};">
+                    <span>${top.icon}</span>
+                    <span>${top.name}</span>
+                </button>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function selectTopic(idx, btn) {
+            currentTopicIndex = idx;
+            currentPhraseIndex = 0;
+            chatStep = 0;
+
+            document.querySelectorAll('#convo-topic-chips .theme-chip').forEach(c => c.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            if (window.pandaAudio) {
+                window.pandaAudio.playSfx('click');
+            }
+
+            renderCurrentPhrase();
+            renderChatDialogue();
+        }
+
+        function setConvoMode(mode) {
+            activeMode = mode;
+            const tabCards = document.getElementById('tab-cards');
+            const tabChat = document.getElementById('tab-chat');
+            const viewCards = document.getElementById('view-cards-mode');
+            const viewChat = document.getElementById('view-chat-mode');
+
+            if (mode === 'cards') {
+                tabCards.classList.add('active');
+                tabChat.classList.remove('active');
+                viewCards.style.display = 'block';
+                viewChat.style.display = 'none';
+                renderCurrentPhrase();
+            } else {
+                tabCards.classList.remove('active');
+                tabChat.classList.add('active');
+                viewCards.style.display = 'none';
+                viewChat.style.display = 'block';
+                renderChatDialogue();
+            }
+
+            if (window.pandaAudio) {
+                window.pandaAudio.playSfx('pop');
+            }
+        }
+
+        // Render Phrase Card
+        function renderCurrentPhrase() {
+            const topic = PANDA_CONVERSATIONS.topics[currentTopicIndex];
+            if (!topic || !topic.phrases) return;
+
+            const item = topic.phrases[currentPhraseIndex];
+            if (!item) return;
+
+            document.getElementById('card-emoji').textContent = item.emoji || '💬';
+            document.getElementById('card-context').textContent = item.context || '';
+            document.getElementById('card-en').innerHTML = `${item.en} <span style="font-size:1.5rem;">🔊</span>`;
+            document.getElementById('card-ipa').textContent = item.ipa || '';
+            document.getElementById('card-vn').innerHTML = `${item.vn} <span style="font-size:1.1rem;">🇻🇳</span>`;
+            document.getElementById('phrase-counter').textContent = `${currentPhraseIndex + 1} / ${topic.phrases.length}`;
+
+            // Reply box
+            const replyBox = document.getElementById('card-reply-box');
+            if (item.replyEn) {
+                replyBox.style.display = 'inline-block';
+                document.getElementById('card-reply-en').textContent = item.replyEn;
+                document.getElementById('card-reply-vn').textContent = item.replyVn || '';
+            } else {
+                replyBox.style.display = 'none';
+            }
+
+            // Hide feedback
+            const fb = document.getElementById('convo-feedback');
+            if (fb) fb.className = 'convo-feedback-box';
+
+            // Auto-speak on phrase change
+            speakCurrentPhrase('en');
+        }
+
+        function speakCurrentPhrase(type) {
+            const topic = PANDA_CONVERSATIONS.topics[currentTopicIndex];
+            if (!topic) return;
+            const item = topic.phrases[currentPhraseIndex];
+            if (!item) return;
+
+            const audio = window.pandaAudio || (typeof pandaAudio !== 'undefined' ? pandaAudio : null);
+            const cardEn = document.getElementById('card-en');
+
+            if (type === 'en') {
+                if (cardEn) {
+                    cardEn.classList.add('playing-audio');
+                    setTimeout(() => cardEn.classList.remove('playing-audio'), 1200);
+                }
+                playEnglishAudio(item.en);
+            } else if (type === 'slow') {
+                if (audio) {
+                    const prev = audio.settings.speed;
+                    audio.settings.speed = 0.65;
+                    audio.speak(item.en, 'en', () => {
+                        audio.settings.speed = prev;
+                    });
+                } else {
+                    playEnglishAudio(item.en);
+                }
+            } else if (type === 'vi') {
+                playVietnameseAudio(item.vn);
+            }
+        }
+
+        function speakReply() {
+            const topic = PANDA_CONVERSATIONS.topics[currentTopicIndex];
+            if (!topic) return;
+            const item = topic.phrases[currentPhraseIndex];
+            if (!item || !item.replyEn) return;
+
+            const box = document.getElementById('card-reply-box');
+            if (box) {
+                box.classList.add('playing-audio');
+                setTimeout(() => box.classList.remove('playing-audio'), 1200);
+            }
+            playEnglishAudio(item.replyEn);
+        }
+
+        function prevPhrase() {
+            const topic = PANDA_CONVERSATIONS.topics[currentTopicIndex];
+            if (!topic) return;
+            currentPhraseIndex--;
+            if (currentPhraseIndex < 0) currentPhraseIndex = topic.phrases.length - 1;
+            renderCurrentPhrase();
+        }
+
+        function nextPhrase() {
+            const topic = PANDA_CONVERSATIONS.topics[currentTopicIndex];
+            if (!topic) return;
+            currentPhraseIndex++;
+            if (currentPhraseIndex >= topic.phrases.length) currentPhraseIndex = 0;
+            renderCurrentPhrase();
+            addStars(1);
+        }
+
+        // Speech Recognition Practice for Kids
+        function startMicPractice() {
+            const topic = PANDA_CONVERSATIONS.topics[currentTopicIndex];
+            if (!topic) return;
+            const item = topic.phrases[currentPhraseIndex];
+            if (!item) return;
+
+            const micBtn = document.getElementById('btn-convo-mic');
+            const fb = document.getElementById('convo-feedback');
+            const audio = window.pandaAudio || (typeof pandaAudio !== 'undefined' ? pandaAudio : null);
+
+            if (!audio) return;
+
+            if (micBtn) micBtn.classList.add('listening');
+            if (fb) {
+                fb.className = 'convo-feedback-box success';
+                fb.innerHTML = '👂 Bé hãy nói to câu: <strong>"' + item.en + '"</strong> nha!';
+            }
+
+            const rec = audio.listenForWord(
+                item.en,
+                (res) => {
+                    if (micBtn) micBtn.classList.remove('listening');
+                    if (res.matched || res.heard) {
+                        fb.innerHTML = `🎉 Giỏi quá bé ơi! Bé vừa nói: <strong>"${res.heard || item.en}"</strong> ⭐ +2 Sao!`;
+                        audio.playSfx('fanfare');
+                        audio.playSfx('star');
+                        addStars(2);
+                    } else {
+                        fb.innerHTML = `🌟 Bé nói rất cố gắng! Cùng luyện đọc lại lần nữa nhé: "${item.en}"`;
+                        audio.playSfx('pop');
+                    }
+                },
+                (err) => {
+                    if (micBtn) micBtn.classList.remove('listening');
+                    fb.innerHTML = '🎤 Hãy cấp quyền micro trên trình duyệt để bé luyện nói nha!';
+                }
+            );
+        }
+
+        // CHAT ROLE-PLAY MODE
+        function renderChatDialogue() {
+            const topic = PANDA_CONVERSATIONS.topics[currentTopicIndex];
+            if (!topic || !topic.dialogue) return;
+
+            document.getElementById('chat-title').textContent = `Hội Thoại: ${topic.name}`;
+            const container = document.getElementById('chat-messages-container');
+            container.innerHTML = '';
+
+            // Render messages up to chatStep
+            for (let i = 0; i <= chatStep && i < topic.dialogue.length; i++) {
+                appendChatMessage(topic.dialogue[i]);
+            }
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+
+            // Check if finished
+            const btnText = document.getElementById('btn-chat-action-text');
+            if (chatStep >= topic.dialogue.length - 1) {
+                btnText.textContent = '🎉 Đã Hoàn Thành! Nhận +5 Sao ⭐';
+            } else {
+                const nextSpeaker = topic.dialogue[chatStep + 1]?.speaker;
+                btnText.textContent = nextSpeaker === 'panda' ? 'Gấu Trúc Trả Lời Tiếp ▶' : 'Bé Đáp Lại Gấu Trúc 💬';
+            }
+        }
+
+        function appendChatMessage(msg) {
+            const container = document.getElementById('chat-messages-container');
+            const row = document.createElement('div');
+            row.className = `chat-bubble-row ${msg.speaker}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'chat-avatar';
+            avatar.textContent = msg.emoji || (msg.speaker === 'panda' ? '🐼' : '🧒');
+
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${msg.speaker}`;
+            bubble.onclick = () => {
+                bubble.classList.add('playing-audio');
+                setTimeout(() => bubble.classList.remove('playing-audio'), 1000);
+                playEnglishAudio(msg.text);
+            };
+
+            bubble.innerHTML = `
+                <div class="chat-bubble-en">${msg.text} 🔊</div>
+                <div class="chat-bubble-vn">${msg.vn}</div>
+            `;
+
+            row.appendChild(avatar);
+            row.appendChild(bubble);
+            container.appendChild(row);
+
+            // Auto-speak the latest message
+            setTimeout(() => {
+                playEnglishAudio(msg.text);
+            }, 200);
+        }
+
+        function nextChatStep() {
+            const topic = PANDA_CONVERSATIONS.topics[currentTopicIndex];
+            if (!topic || !topic.dialogue) return;
+
+            if (chatStep < topic.dialogue.length - 1) {
+                chatStep++;
+                renderChatDialogue();
+                if (window.pandaAudio) window.pandaAudio.playSfx('pop');
+            } else {
+                // Completed dialogue!
+                addStars(5);
+                if (window.pandaAudio) {
+                    window.pandaAudio.playSfx('fanfare');
+                }
+                alert('🎉 Tuyệt vời! Bé và Gấu Trúc đã hoàn thành bài hội thoại này rồi! Bé nhận được +5 sao ⭐!');
+                chatStep = 0;
+                renderChatDialogue();
+            }
+        }
+
+        function restartChatDialogue() {
+            chatStep = 0;
+            renderChatDialogue();
+            if (window.pandaAudio) window.pandaAudio.playSfx('pop');
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateStarsBadge();
+            initTopicChips();
+            renderCurrentPhrase();
+        });
+    </script>
+</body>
+
+</html>
