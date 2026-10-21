@@ -56,20 +56,20 @@ class PandaGamesManager {
                 <div class="card-3d" id="fc-card" onclick="sunnyApp.games.flipCard()">
                     <!-- Front Side -->
                     <div class="card-face card-front">
-                        <div class="card-media-box">
+                        <div class="card-media-box" onclick="event.stopPropagation(); sunnyApp.games.speakCurrent(event, 'en')" style="cursor: pointer;" title="Chạm hình ảnh để nghe tiếng Anh">
                             <img id="fc-img" src="" alt="Word" class="card-photo" onerror="this.onerror=null; this.src='https://placehold.co/600x600/f6b93b/ffffff.png?text=Sunny';">
                             <span class="card-emoji-badge" id="fc-emoji">🐾</span>
                         </div>
-                        <div class="card-word-en" id="fc-en">Word</div>
-                        <div class="card-ipa" id="fc-ipa">/wɜːd/</div>
-                        <div class="card-flip-hint">👆 Chạm để lật xem tiếng Việt</div>
+                        <div class="card-word-en" id="fc-en" onclick="event.stopPropagation(); sunnyApp.games.speakCurrent(event, 'en')" style="cursor: pointer;" title="Chạm vào chữ để nghe phát âm tiếng Anh">Word 🔊</div>
+                        <div class="card-ipa" id="fc-ipa" onclick="event.stopPropagation(); sunnyApp.games.speakCurrent(event, 'en')" style="cursor: pointer;" title="Phiên âm quốc tế">/wɜːd/</div>
+                        <div class="card-flip-hint">👆 Chạm viền ngoài để lật xem tiếng Việt</div>
                     </div>
 
                     <!-- Back Side -->
                     <div class="card-face card-back">
                         <div class="back-emoji" id="fc-back-emoji">🌟</div>
-                        <div class="back-word-vn" id="fc-vn">Từ Tiếng Việt</div>
-                        <div class="back-sentence-en" id="fc-sentence">Example sentence for kids</div>
+                        <div class="back-word-vn" id="fc-vn" onclick="event.stopPropagation(); sunnyApp.games.speakCurrent(event, 'vi')" style="cursor: pointer;" title="Chạm để nghe tiếng Việt">Từ Tiếng Việt 🇻🇳</div>
+                        <div class="back-sentence-en" id="fc-sentence" onclick="event.stopPropagation(); sunnyApp.games.speakSentence(event)" style="cursor: pointer;" title="Chạm để nghe cả câu tiếng Anh">Example sentence for kids 🔊</div>
                         <div class="back-hint">🎉 Giỏi lắm bé ơi!</div>
                     </div>
                 </div>
@@ -171,21 +171,56 @@ class PandaGamesManager {
     }
 
     speakCurrent(event, type) {
-        if (event) event.stopPropagation();
+        let targetEl = null;
+        if (event) {
+            event.stopPropagation();
+            targetEl = event.currentTarget || event.target;
+            if (targetEl && targetEl.classList) {
+                targetEl.classList.add("playing-audio");
+                setTimeout(() => {
+                    if (targetEl && targetEl.classList) {
+                        targetEl.classList.remove("playing-audio");
+                    }
+                }, 1000);
+            }
+        }
         const item = this.gameState.words[this.gameState.currentIndex];
-        if (!item || !window.pandaAudio) return;
+        if (!item) return;
+        const audio = window.pandaAudio || (typeof pandaAudio !== 'undefined' ? pandaAudio : null);
+        if (!audio) return;
 
         if (type === 'en') {
-            window.pandaAudio.speak(item.en, 'en');
+            audio.speak(item.en, 'en');
         } else if (type === 'slow') {
-            // Temporarily speak slower
-            const prev = window.pandaAudio.settings.speed;
-            window.pandaAudio.settings.speed = 0.65;
-            window.pandaAudio.speak(item.en, 'en', () => {
-                window.pandaAudio.settings.speed = prev;
+            const prev = audio.settings.speed;
+            audio.settings.speed = 0.65;
+            audio.speak(item.en, 'en', () => {
+                audio.settings.speed = prev;
             });
         } else if (type === 'vi') {
-            window.pandaAudio.speak(item.vn, 'vi');
+            audio.speak(item.vn, 'vi');
+        }
+    }
+
+    speakSentence(event) {
+        let targetEl = null;
+        if (event) {
+            event.stopPropagation();
+            targetEl = event.currentTarget || event.target;
+            if (targetEl && targetEl.classList) {
+                targetEl.classList.add("playing-audio");
+                setTimeout(() => {
+                    if (targetEl && targetEl.classList) {
+                        targetEl.classList.remove("playing-audio");
+                    }
+                }, 1000);
+            }
+        }
+        const item = this.gameState.words[this.gameState.currentIndex];
+        if (!item || !item.sentence) return;
+        const audio = window.pandaAudio || (typeof pandaAudio !== 'undefined' ? pandaAudio : null);
+        if (audio) {
+            audio.speak(item.sentence, 'en');
         }
     }
 

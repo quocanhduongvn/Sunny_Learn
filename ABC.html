@@ -126,15 +126,18 @@
     <!-- Letter Popup Modal -->
     <div class="active-letter-modal" id="letter-modal" onclick="closeLetterModal(event)">
         <div class="active-letter-card" onclick="event.stopPropagation()">
-            <div id="modal-letter" style="font-size: 5rem; font-weight: 900; color: #1E90FF;">Aa</div>
-            <div id="modal-emoji" style="font-size: 4rem; margin: 10px 0;">🍎</div>
-            <div id="modal-word-en" style="font-size: 2.2rem; font-weight: 900; color: #2D3436;">Apple</div>
-            <div id="modal-word-vn" style="font-size: 1.3rem; font-weight: 700; color: #00B894; margin-bottom: 15px;">Quả Táo</div>
+            <div id="modal-letter" onclick="speakCurrentLetter()" style="font-size: 5rem; font-weight: 900; color: #1E90FF; cursor: pointer;" title="Chạm để nghe đọc chữ cái">Aa 🔊</div>
+            <div id="modal-emoji" onclick="speakCurrentLetter()" style="font-size: 4rem; margin: 10px 0; cursor: pointer;">🍎</div>
+            <div id="modal-word-en" onclick="speakCurrentLetter()" style="font-size: 2.2rem; font-weight: 900; color: #2D3436; cursor: pointer;" title="Chạm để nghe tiếng Anh">Apple 🔊</div>
+            <div id="modal-word-vn" onclick="speakCurrentWordVn()" style="font-size: 1.3rem; font-weight: 700; color: #00B894; margin-bottom: 15px; cursor: pointer;" title="Chạm để nghe tiếng Việt">Quả Táo 🇻🇳</div>
             <div id="modal-hint" style="font-size: 1rem; font-weight: 600; color: #718096; margin-bottom: 20px;">A says /æ/ like Apple</div>
 
-            <div style="display:flex; gap:10px; justify-content:center;">
-                <button class="btn-voice-en" onclick="speakCurrentLetter()">
-                    🔊 Nghe Phát Âm
+            <div style="display:flex; gap:10px; justify-content:center; flex-wrap: wrap;">
+                <button class="btn-voice-en" onclick="speakCurrentLetter()" title="Nghe chữ cái và từ vựng">
+                    🔊 Tiếng Anh
+                </button>
+                <button class="btn-voice-vn" onclick="speakCurrentWordVn()" style="background:#00b894; color:white; border-radius:25px; padding:10px 18px; font-weight:800; border:none; cursor:pointer;" title="Nghe tiếng Việt">
+                    🇻🇳 Tiếng Việt
                 </button>
                 <button class="btn-modal btn-modal-cancel" onclick="document.getElementById('letter-modal').style.display='none'">
                     Đóng
@@ -185,9 +188,33 @@
         }
 
         function speakCurrentLetter() {
-            if (!currentLetterItem || !window.pandaAudio) return;
-            window.pandaAudio.playSfx('pop');
-            window.pandaAudio.speak(`${currentLetterItem.letter}. ${currentLetterItem.en}!`, 'en');
+            if (!currentLetterItem) return;
+            const audio = window.pandaAudio || (typeof pandaAudio !== 'undefined' ? pandaAudio : null);
+            if (audio) {
+                audio.playSfx('pop');
+            }
+            
+            // Phát âm thanh chữ cái MP3 trước, sau đó phát từ vựng
+            const letterAudio = new Audio(`sound/words/letter_${currentLetterItem.id}.mp3`);
+            letterAudio.onended = () => {
+                setTimeout(() => {
+                    playEnglishAudio(currentLetterItem.en);
+                }, 250);
+            };
+            letterAudio.onerror = () => {
+                playEnglishAudio(currentLetterItem.en);
+            };
+            const p = letterAudio.play();
+            if (p !== undefined) {
+                p.catch(() => {
+                    playEnglishAudio(currentLetterItem.en);
+                });
+            }
+        }
+
+        function speakCurrentWordVn() {
+            if (!currentLetterItem) return;
+            playVietnameseAudio(currentLetterItem.vn);
         }
 
         function closeLetterModal(e) {

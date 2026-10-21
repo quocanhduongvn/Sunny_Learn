@@ -315,6 +315,15 @@ class SunnyPandaApp {
 
 // Global App Instance
 let sunnyApp = null;
-window.addEventListener('DOMContentLoaded', () => {
-    sunnyApp = new SunnyPandaApp();
-});
+function initSunnyApp() {
+    if (!window.sunnyApp) {
+        sunnyApp = new SunnyPandaApp();
+        window.sunnyApp = sunnyApp;
+    }
+}
+
+if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', initSunnyApp);
+} else {
+    initSunnyApp();
+}

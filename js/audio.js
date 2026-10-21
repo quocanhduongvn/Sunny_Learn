@@ -1,84 +1,110 @@
 /**
  * SUNNY PANDA - Enterprise Audio Engine
- * Modeled after TOI-TU-HOC proven architecture:
- * Instant Web Speech API + High-Fidelity MP3 Audio Fallback + Local Sound Files
+ * Tier 1: Real Local Studio MP3 Recordings (sound/words/*.mp3) - Instant, loud, clear, 100% offline
+ * Tier 2: Real Native Speaker Online Stream (Youdao CDN - identical to TOI-TU-HOC)
+ * Tier 3: Web Speech API Fallback
  */
 
-// ==================== HỆ THỐNG PHÁT ÂM TIẾNG ANH (CHUẨN THEO TOI-TU-HOC) ====================
+// ==================== HỆ THỐNG PHÁT ÂM TIẾNG ANH (ƯU TIÊN FILE MP3 BẢN XỨ) ====================
 function playEnglishAudio(text, buttonElement = null, onEnd = null) {
-    if (!text) return;
-
-    if (buttonElement && buttonElement.classList) {
-        buttonElement.classList.add("playing-audio");
-        setTimeout(() => buttonElement.classList.remove("playing-audio"), 1200);
+    if (!text) {
+        if (onEnd) onEnd();
+        return;
     }
 
-    // Chuẩn hóa từ để tìm file
+    let btn = buttonElement;
+    if (btn && btn.classList) {
+        btn.classList.add("playing-audio");
+        setTimeout(() => {
+            if (btn && btn.classList) {
+                btn.classList.remove("playing-audio");
+            }
+        }, 1200);
+    }
+
     const cleanWord = text.trim().toLowerCase().replace(/[\.,\?!]/g, '').replace(/\s+/g, '_');
     
-    // Nguồn âm thanh MP3 (ưu tiên local, fallback Youdao Audio như app tiếng Trung)
-    const playFallbackMp3 = () => {
-        try {
-            // 1. Thử file local mp3 trong sound/words/
-            const localUrl = `sound/words/${cleanWord}.mp3`;
-            const audio = new Audio(localUrl);
-            
-            audio.onended = () => { if (onEnd) onEnd(); };
-            
-            const p = audio.play();
-            if (p !== undefined) {
-                p.catch(() => {
-                    // 2. Nếu file local không có, phát ngay qua stream bản xứ (như app tiếng Trung của bạn)
-                    const streamUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=2`;
-                    const onlineAudio = new Audio(streamUrl);
-                    onlineAudio.onended = () => { if (onEnd) onEnd(); };
-                    onlineAudio.play().catch(err => {
-                        console.warn("Không thể phát âm thanh:", err);
-                        if (onEnd) onEnd();
-                    });
-                });
-            }
-        } catch (e) {
-            console.error("Audio error:", e);
-            if (onEnd) onEnd();
-        }
+    // 1. ƯU TIÊN PHÁT FILE MP3 LOCAL ĐÃ CÓ TRÊN MÁY (117 files trong sound/words/)
+    let localUrl = `sound/words/${cleanWord}.mp3`;
+    if (cleanWord.length === 1 && cleanWord >= 'a' && cleanWord <= 'z') {
+        localUrl = `sound/words/letter_${cleanWord}.mp3`;
+    }
+
+    console.log(`[AUDIO] Phát âm tiếng Anh: "${text}" -> File: ${localUrl}`);
+    const audio = new Audio(localUrl);
+    audio.volume = 1.0;
+
+    let fallbackCalled = false;
+    const triggerFallback = (reason) => {
+        if (fallbackCalled) return;
+        fallbackCalled = true;
+        playOnlineStreamAudio(text, onEnd);
     };
 
-    // Thử dùng Web Speech API nếu trình duyệt hỗ trợ
-    if ('speechSynthesis' in window) {
-        try {
-            window.speechSynthesis.cancel(); // Dừng câu trước đó nếu đang đọc
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.85; // Tốc độ hơi chậm cho người mới bắt đầu dễ nghe
+    audio.onended = () => {
+        if (onEnd) onEnd();
+    };
 
-            const voices = window.speechSynthesis.getVoices();
-            const enVoice = voices.find(v => v.lang.startsWith('en') || v.lang.includes('US') || v.lang.includes('GB'));
-            if (enVoice) {
-                utterance.voice = enVoice;
-            }
+    audio.onerror = () => {
+        triggerFallback("audio-load-error");
+    };
 
-            let started = false;
-            utterance.onstart = () => { started = true; };
-            utterance.onend = () => { if (onEnd) onEnd(); };
-            utterance.onerror = () => {
-                playFallbackMp3();
-            };
+    const p = audio.play();
+    if (p !== undefined) {
+        p.catch((err) => {
+            triggerFallback(err);
+        });
+    }
+}
 
-            window.speechSynthesis.speak(utterance);
+function playOnlineStreamAudio(text, onEnd = null) {
+    try {
+        const streamUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=2`;
+        const onlineAudio = new Audio(streamUrl);
+        onlineAudio.volume = 1.0;
 
-            // Kiểm tra an toàn: nếu sau 350ms Web Speech không cất tiếng, tự động phát MP3
-            setTimeout(() => {
-                if (!started) {
-                    playFallbackMp3();
-                }
-            }, 350);
+        let speechFallbackCalled = false;
+        const triggerSpeechFallback = () => {
+            if (speechFallbackCalled) return;
+            speechFallbackCalled = true;
+            playWithWebSpeech(text, onEnd);
+        };
 
-        } catch (e) {
-            playFallbackMp3();
+        onlineAudio.onended = () => { if (onEnd) onEnd(); };
+        onlineAudio.onerror = () => { triggerSpeechFallback(); };
+
+        const p = onlineAudio.play();
+        if (p !== undefined) {
+            p.catch(() => {
+                triggerSpeechFallback();
+            });
         }
-    } else {
-        playFallbackMp3();
+    } catch (e) {
+        playWithWebSpeech(text, onEnd);
+    }
+}
+
+function playWithWebSpeech(text, onEnd = null) {
+    if (!('speechSynthesis' in window)) {
+        if (onEnd) onEnd();
+        return;
+    }
+    try {
+        if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.85;
+        const voices = window.speechSynthesis.getVoices();
+        const enVoice = voices.find(v => v.lang.startsWith('en'));
+        if (enVoice) utterance.voice = enVoice;
+        utterance.onend = () => { if (onEnd) onEnd(); };
+        utterance.onerror = () => { if (onEnd) onEnd(); };
+        window.speechSynthesis.speak(utterance);
+    } catch (e) {
+        if (onEnd) onEnd();
     }
 }
 
@@ -87,6 +113,9 @@ function playVietnameseAudio(text, onEnd = null) {
     if (!text) return;
     if ('speechSynthesis' in window) {
         try {
+            if (window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+            }
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'vi-VN';
@@ -168,7 +197,7 @@ class PandaAudioEngine {
                 if (window.speechSynthesis.paused) {
                     window.speechSynthesis.resume();
                 }
-                const dummy = new SpeechSynthesisUtterance(' ');
+                const dummy = new SpeechSynthesisUtterance('');
                 dummy.volume = 0.01;
                 window.speechSynthesis.speak(dummy);
             } catch (e) {}
@@ -494,5 +523,9 @@ class PandaAudioEngine {
     }
 }
 
-// Global audio engine
+// Global audio engine instance
 const pandaAudio = new PandaAudioEngine();
+window.pandaAudio = pandaAudio;
+window.playEnglishAudio = playEnglishAudio;
+window.playVietnameseAudio = playVietnameseAudio;
+

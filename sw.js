@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sunny-panda-v1.4';
+const CACHE_NAME = 'sunny-panda-v2.0';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',

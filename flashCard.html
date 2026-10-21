@@ -95,18 +95,23 @@
                 chips.innerHTML = html;
             }
 
-            setTimeout(() => {
-                if (window.sunnyApp && window.sunnyApp.games) {
-                    window.sunnyApp.games.startFlashcards('animals');
+            const launch = () => {
+                const app = window.sunnyApp || (typeof sunnyApp !== 'undefined' ? sunnyApp : null);
+                if (app && app.games) {
+                    app.games.startFlashcards('animals');
+                } else {
+                    setTimeout(launch, 100);
                 }
-            }, 100);
+            };
+            launch();
         });
 
         function switchTheme(catKey, elem) {
             document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active'));
             if (elem) elem.classList.add('active');
-            if (window.sunnyApp && window.sunnyApp.games) {
-                window.sunnyApp.games.startFlashcards(catKey);
+            const app = window.sunnyApp || (typeof sunnyApp !== 'undefined' ? sunnyApp : null);
+            if (app && app.games) {
+                app.games.startFlashcards(catKey);
             }
         }
     </script>
